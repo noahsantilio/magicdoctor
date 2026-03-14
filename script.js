@@ -1,265 +1,291 @@
 let chart
 
-// ============================
-// MINI BANCO DE CARTAS
-// ============================
+function toggleMode(){
 
-const localCardDB = {
+const mode=document.getElementById("inputMode").value
 
-"Sol Ring":{type:"Artifact",cmc:1,role:"ramp"},
-"Arcane Signet":{type:"Artifact",cmc:2,role:"ramp"},
-"Cultivate":{type:"Sorcery",cmc:3,role:"ramp"},
-"Rampant Growth":{type:"Sorcery",cmc:2,role:"ramp"},
-"Lightning Greaves":{type:"Artifact",cmc:2,role:"protection"},
-"Swiftfoot Boots":{type:"Artifact",cmc:2,role:"protection"},
-"Beast Whisperer":{type:"Creature",cmc:4,role:"draw"},
-"Guardian Project":{type:"Enchantment",cmc:4,role:"draw"},
-"Command Tower":{type:"Land",cmc:0},
-"Forest":{type:"Land",cmc:0},
-"Island":{type:"Land",cmc:0},
-"Mountain":{type:"Land",cmc:0},
-"Swamp":{type:"Land",cmc:0},
-"Plains":{type:"Land",cmc:0}
+document.getElementById("deckLink").style.display=
+mode==="moxfield"?"block":"none"
+
+document.getElementById("deckList").style.display=
+mode==="manual"?"block":"block":"none"
 
 }
 
-// ============================
-// CACHE
-// ============================
+function clearAnalysis(){
 
-function getCache(){
+document.getElementById("result").textContent="Resultado aparecerá aqui"
 
-const cache = localStorage.getItem("cardCache")
+document.getElementById("deckLink").value=""
+document.getElementById("deckList").value=""
 
-return cache ? JSON.parse(cache) : {}
-
-}
-
-function saveCache(cache){
-
-localStorage.setItem("cardCache",JSON.stringify(cache))
+if(chart) chart.destroy()
 
 }
 
-// ============================
-// BUSCA Scryfall em lote
-// ============================
+function normalizeMoxfieldLink(link){
 
-async function fetchCardsBatch(names){
+link=link.trim()
 
-const response = await fetch(
-"https://api.scryfall.com/cards/collection",
-{
+if(!link.includes("http"))
+link="https://"+link
+
+const match=link.match(/moxfield\.com\/decks\/([A-Za-z0-9\-_]+)/)
+
+return match?match[1]:null
+
+}
+
+function parseDeckList(raw){
+
+const lines=raw.split("\n")
+
+const list=[]
+
+for(const line of lines){
+
+const match=line.match(/^(\d+)\s(.+)/)
+
+if(!match) continue
+
+let qty=parseInt(match[1])
+
+let name=match[2]
+
+name=name.replace(/\(.*?\)/g,"")
+name=name.replace(/[0-9]+$/,"")
+name=name.trim()
+
+list.push({name,qty})
+
+}
+
+return list
+
+}
+
+async function fetchScryfallBatch(names){
+
+const response=await fetch("https://api.scryfall.com/cards/collection",{
+
 method:"POST",
-headers:{"Content-Type":"application/json"},
+headers:{'Content-Type':'application/json'},
+
 body:JSON.stringify({
+
 identifiers:names.map(n=>({name:n}))
+
 })
-}
-)
 
-const data = await response.json()
+})
 
-const result={}
+const data=await response.json()
+
+const map={}
 
 data.data.forEach(card=>{
 
-result[card.name]={
+map[card.name]={
+
 type:card.type_line,
 cmc:card.cmc,
-text:card.oracle_text || ""
+text:(card.oracle_text||"").toLowerCase()
+
 }
 
 })
 
-return result
+return map
 
 }
 
-// ============================
-// CLASSIFICAÇÃO ESTRATÉGICA
-// ============================
+function classify(card){
 
-function classifyCard(card){
+const t=card.text
 
-const text=(card.text || "").toLowerCase()
+if(t.includes("draw")) return "draw"
 
-if(text.includes("search your library")) return "tutor"
+if(t.includes("search your library")) return "tutor"
 
-if(text.includes("draw")) return "draw"
+if(t.includes("destroy target")||t.includes("exile target"))
+return "removal"
 
-if(text.includes("destroy target") || text.includes("exile target")) return "removal"
+if(t.includes("destroy all")||t.includes("each creature"))
+return "boardwipe"
 
-if(text.includes("destroy all") || text.includes("each creature")) return "boardwipe"
-
-if(text.includes("add {") || text.includes("treasure")) return "ramp"
+if(t.includes("add {")||t.includes("treasure"))
+return "ramp"
 
 return null
 
 }
 
-// ============================
-// ANALISAR DECK
-// ============================
-
 async function analyzeDeck(){
 
+const result=document.getElementById("result")
+
+result.textContent="Analisando..."
+
+let list=[]
+
 const mode=document.getElementById("inputMode").value
-const resultBox=document.getElementById("result")
 
-resultBox.textContent="Analisando deck..."
-
-let cardList=[]
-
-// ============================
-// PEGAR LISTA
-// ============================
+try{
 
 if(mode==="manual"){
 
 const raw=document.getElementById("deckList").value
-const lines=raw.split("\n")
 
-for(const line of lines){
-
-const match=line.match(/^(\d+)\s(.+)/)
-if(!match) continue
-
-const qty=parseInt(match[1])
-const name=match[2].replace(/\(.*?\)/g,"").trim()
-
-cardList.push({name,qty})
-
-}
+list=parseDeckList(raw)
 
 }else{
 
 const link=document.getElementById("deckLink").value
-const match=link.match(/decks\/([A-Za-z0-9\-_]+)/)
 
-if(!match){
+const id=normalizeMoxfieldLink(link)
 
-resultBox.textContent="Link inválido"
+if(!id){
+
+result.textContent="Link do Moxfield inválido"
+
 return
-
 }
 
-const deckID=match[1]
+const response=await fetch(`https://api.moxfield.com/v2/decks/${id}`)
 
-const response=await fetch(`https://api.moxfield.com/v2/decks/${deckID}`)
+if(!response.ok){
+
+result.textContent="Erro ao acessar deck do Moxfield"
+return
+}
+
 const data=await response.json()
 
 Object.values(data.mainboard).forEach(card=>{
 
-cardList.push({
+list.push({
+
 name:card.card.name,
 qty:card.quantity
-})
 
 })
 
-}
-
-// ============================
-// BUSCA DADOS
-// ============================
-
-const cache=getCache()
-const missing=[]
-const cardData={}
-
-for(const entry of cardList){
-
-if(localCardDB[entry.name]){
-
-cardData[entry.name]=localCardDB[entry.name]
-
-}else if(cache[entry.name]){
-
-cardData[entry.name]=cache[entry.name]
-
-}else{
-
-missing.push(entry.name)
-
-}
-
-}
-
-// ============================
-// BUSCA API
-// ============================
-
-if(missing.length){
-
-const apiData=await fetchCardsBatch(missing)
-
-Object.keys(apiData).forEach(name=>{
-
-cardData[name]=apiData[name]
-cache[name]=apiData[name]
-
 })
 
-saveCache(cache)
+}
+
+if(list.length===0){
+
+result.textContent="Nenhuma carta encontrada"
+
+return
 
 }
 
-// ============================
-// ANALISE
-// ============================
+const unique=[...new Set(list.map(c=>c.name))]
 
-let totals={
-cards:0,
-lands:0
-}
+const batch=await fetchScryfallBatch(unique)
 
-let roles={
-ramp:0,
-draw:0,
-removal:0,
-boardwipe:0,
-tutor:0,
-protection:0,
-wincon:0
-}
+let totals={cards:0,lands:0}
 
-let cmcBuckets={"0-1":0,"2":0,"3":0,"4":0,"5+":0}
+let roles={ramp:0,draw:0,removal:0,boardwipe:0,tutor:0}
 
-for(const entry of cardList){
+let curve={"0-1":0,"2":0,"3":0,"4":0,"5+":0}
 
-const info=cardData[entry.name]
+for(const entry of list){
 
-if(!info) continue
+const card=batch[entry.name]
+
+if(!card) continue
 
 const qty=entry.qty
 
 totals.cards+=qty
 
-if(info.type.includes("Land")) totals.lands+=qty
+if(card.type.includes("Land"))
+totals.lands+=qty
 
-let cmc=info.cmc || 0
+const cmc=card.cmc
 
-if(cmc<=1) cmcBuckets["0-1"]+=qty
-else if(cmc===2) cmcBuckets["2"]+=qty
-else if(cmc===3) cmcBuckets["3"]+=qty
-else if(cmc===4) cmcBuckets["4"]+=qty
-else cmcBuckets["5+"]+=qty
+if(cmc<=1)curve["0-1"]+=qty
+else if(cmc===2)curve["2"]+=qty
+else if(cmc===3)curve["3"]+=qty
+else if(cmc===4)curve["4"]+=qty
+else curve["5+"]+=qty
 
-let role=info.role || classifyCard(info)
+const role=classify(card)
 
-if(role && roles[role]!==undefined){
+if(role)roles[role]+=qty
 
-roles[role]+=qty
+}
+
+result.textContent=`
+
+===== Contagem =====
+
+Cartas totais: ${totals.cards}
+Terrenos: ${totals.lands}
+
+===== Estratégia =====
+
+Ramp: ${roles.ramp}
+Draw: ${roles.draw}
+Removal: ${roles.removal}
+Boardwipe: ${roles.boardwipe}
+Tutors: ${roles.tutor}
+
+===== Curva de Mana =====
+
+0-1: ${curve["0-1"]}
+2: ${curve["2"]}
+3: ${curve["3"]}
+4: ${curve["4"]}
+5+: ${curve["5+"]}
+
+`
+
+drawChart(curve)
+
+}catch(e){
+
+result.textContent="Erro na análise"
+
+console.error(e)
 
 }
 
 }
 
-// ============================
-// RESULTADO
-// ============================
+function drawChart(curve){
 
-let warnings=[]
+const ctx=document.getElementById("manaChart")
 
-if(totals.cards!==100) warnings.push("Dec
+if(chart) chart.destroy()
+
+chart=new Chart(ctx,{
+
+type:"bar",
+
+data:{
+
+labels:["0-1","2","3","4","5+"],
+
+datasets:[{
+
+label:"Curva de Mana",
+
+data:[
+curve["0-1"],
+curve["2"],
+curve["3"],
+curve["4"],
+curve["5+"]
+]
+
+}]
+
+}
+
+})
+
+}
