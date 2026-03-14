@@ -1,1 +1,1 @@
-# magicdoctor
+# Magic Doctor, avaliação de deck
