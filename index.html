@@ -21,7 +21,7 @@ background:#f4f6f8;
 }
 
 h1{
-margin-bottom:4px;
+margin-bottom:2px;
 }
 
 .subtitle{
@@ -34,35 +34,34 @@ textarea{
 width:100%;
 height:260px;
 font-family:monospace;
-border-radius:10px;
+border-radius:12px;
 border:1px solid #ccc;
 padding:12px;
 }
 
 button{
-padding:12px 24px;
+padding:12px 26px;
 border:none;
 border-radius:30px;
 font-weight:bold;
 cursor:pointer;
 margin-right:10px;
-margin-top:12px;
+margin-top:15px;
 }
 
-.analyzeBtn{
+.analyze{
 background:#2563eb;
 color:white;
 }
 
-.clearBtn{
+.clear{
 background:#9ca3af;
 color:white;
 }
 
-#cardCounter{
+#counter{
 margin-top:10px;
 font-weight:bold;
-color:#444;
 }
 
 #result{
@@ -70,31 +69,24 @@ margin-top:25px;
 background:white;
 padding:25px;
 border-radius:12px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
-}
-
-#analysisChart{
-margin-top:25px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
 }
 
 footer{
 
-position:fixed;
-bottom:0;
-left:0;
-width:100%;
-background:white;
-border-top:1px solid #ddd;
-padding:10px;
-text-align:center;
+margin-top:40px;
+padding:15px;
+border-top:1px solid #ccc;
 font-size:13px;
 
 }
 
 footer span{
-cursor:pointer;
+
 color:#2563eb;
+cursor:pointer;
 font-weight:bold;
+
 }
 
 #popup{
@@ -107,8 +99,8 @@ transform:translate(-50%,-50%);
 background:white;
 padding:30px;
 border-radius:10px;
-box-shadow:0 4px 20px rgba(0,0,0,0.2);
 max-width:600px;
+box-shadow:0 4px 20px rgba(0,0,0,0.2);
 
 }
 
@@ -119,55 +111,53 @@ max-width:600px;
 <body>
 
 <h1>Magic Doctor</h1>
-
 <div class="subtitle">
 Ferramenta de análise de decks de Commander
 </div>
 
-<textarea id="deckList" placeholder="Cole a lista do deck aqui..."></textarea>
+<textarea id="deckInput" placeholder="Cole a lista do deck aqui"></textarea>
 
-<div id="cardCounter">Cartas detectadas: 0</div>
+<div id="counter">Cartas detectadas: 0</div>
 
-<button class="analyzeBtn" onclick="analyzeDeck()">Analisar Deck</button>
-<button class="clearBtn" onclick="clearAnalysis()">Limpar Análise</button>
+<button class="analyze" onclick="analyzeDeck()">Analisar Deck</button>
+<button class="clear" onclick="clearDeck()">Limpar Análise</button>
 
 <div id="result"></div>
 
-<canvas id="analysisChart"></canvas>
+<canvas id="chart"></canvas>
+
+<footer>
+
+Este site analisa estratégia, curva de mana, ramp, draw, remoções, sinergia com commander e power level.
+
+<span onclick="openPopup()">Como funciona?</span>
+
+</footer>
 
 <div id="popup">
 
-<h3>Como as análises funcionam</h3>
+<h3>Como funciona a análise</h3>
 
 <p>
 
 O Magic Doctor avalia decks de Commander analisando:
 
-• Estrutura do deck (lands, ramp, draw, removal)  
-• Curva média de mana  
-• Detecção de combos  
-• Detecção de combos infinitos  
-• Identificação de arquétipos  
-• Identificação de win conditions  
-• Presença de staples  
+• Estrutura do deck  
+• Curva de mana  
+• Ramp  
+• Card draw  
+• Remoções  
+• Sinergia com o comandante  
+• Arquétipo do deck  
+• Condições de vitória  
 
-O Power Level é estimado considerando:
-
-ramp + draw + removal + curva de mana + combos + infinite combos.
+O Power Level é estimado utilizando métricas comuns da comunidade EDH.
 
 </p>
 
 <button onclick="closePopup()">Fechar</button>
 
 </div>
-
-<footer>
-
-Este site analisa ramp, draw, removal, interação, combos, arquétipos e power level.
-
-<span onclick="openPopup()">Como funciona?</span>
-
-</footer>
 
 <script src="data/combos.js"></script>
 <script src="data/archetypes.js"></script>
@@ -178,5 +168,4 @@ Este site analisa ramp, draw, removal, interação, combos, arquétipos e power 
 <script src="script.js"></script>
 
 </body>
-
 </html>
