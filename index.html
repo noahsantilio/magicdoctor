@@ -19,11 +19,15 @@ h1{
 text-align:center;
 }
 
-input{
+select,input,textarea{
 width:100%;
 padding:12px;
 margin-top:10px;
 font-size:16px;
+}
+
+textarea{
+height:220px;
 }
 
 button{
@@ -49,12 +53,25 @@ overflow:auto;
 
 <h1>Magic Doctor</h1>
 
-<p>Cole um link de deck do Moxfield:</p>
+<p>Escolha como deseja analisar o deck:</p>
 
-<input 
-id="deckLink" 
+<select id="inputMode" onchange="toggleInputMode()">
+
+<option value="moxfield">Link do Moxfield</option>
+<option value="manual">Colar lista do deck</option>
+
+</select>
+
+<input
+id="deckLink"
 placeholder="https://www.moxfield.com/decks/XXXXX"
->
+/>
+
+<textarea
+id="deckList"
+placeholder="Cole a lista do deck aqui (ex: 1 Sol Ring)"
+style="display:none"
+></textarea>
 
 <button onclick="analyzeDeck()">
 Analisar Deck
@@ -69,4 +86,3 @@ Resultado aparecerá aqui
 </body>
 
 </html>
-
