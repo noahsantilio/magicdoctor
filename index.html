@@ -8,11 +8,11 @@
 <style>
 
 body{
-font-family: Arial;
+font-family:Arial;
 max-width:900px;
 margin:auto;
 padding:40px;
-background:#f7f7f7;
+background:#f4f4f4;
 }
 
 h1{
@@ -46,6 +46,13 @@ border-radius:6px;
 overflow:auto;
 }
 
+canvas{
+margin-top:20px;
+background:white;
+padding:10px;
+border-radius:6px;
+}
+
 </style>
 
 </head>
@@ -57,10 +64,8 @@ overflow:auto;
 <p>Escolha como deseja analisar o deck:</p>
 
 <select id="inputMode" onchange="toggleInputMode()">
-
 <option value="moxfield">Link do Moxfield</option>
 <option value="manual">Colar lista do deck</option>
-
 </select>
 
 <input
@@ -70,24 +75,19 @@ placeholder="https://moxfield.com/decks/XXXXX"
 
 <textarea
 id="deckList"
-placeholder="Cole a lista do deck aqui (ex: 1 Sol Ring)"
+placeholder="Cole a lista do deck aqui"
 style="display:none"
 ></textarea>
 
-<button onclick="analyzeDeck()">
-Analisar Deck
-</button>
+<button onclick="analyzeDeck()">Analisar Deck</button>
+<button onclick="clearAnalysis()">Limpar análise</button>
 
-<button onclick="clearAnalysis()">
-Limpar análise
-</button>
+<pre id="result">Resultado aparecerá aqui</pre>
 
-<pre id="result">
-Resultado aparecerá aqui
-</pre>
+<canvas id="manaCurveChart"></canvas>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="script.js"></script>
 
 </body>
-
 </html>
