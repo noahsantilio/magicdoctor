@@ -3,6 +3,7 @@ let chart
 function toggleInputMode(){
 
 const mode=document.getElementById("inputMode").value
+
 document.getElementById("deckLink").style.display =
 mode==="moxfield"?"block":"none"
 
@@ -26,13 +27,21 @@ chart.destroy()
 
 async function fetchCardData(name){
 
-const url=`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
+try{
 
-const response=await fetch(url)
+const response=await fetch(
+`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
+)
 
 if(!response.ok) return null
 
 return await response.json()
+
+}catch{
+
+return null
+
+}
 
 }
 
@@ -46,6 +55,8 @@ let commander="Desconhecido"
 let colors=[]
 let cmcBuckets={"0-1":0,"2":0,"3":0,"4":0,"5+":0}
 
+resultBox.textContent="Analisando deck..."
+
 try{
 
 if(mode==="moxfield"){
@@ -55,15 +66,14 @@ const link=document.getElementById("deckLink").value.trim()
 const match=link.match(/moxfield\.com\/decks\/([A-Za-z0-9\-_]+)/)
 
 if(!match){
-alert("Use um link válido do Moxfield")
+resultBox.textContent="Link do Moxfield inválido."
 return
 }
 
 const deckID=match[1]
 
-resultBox.textContent="Lendo deck..."
-
 const response=await fetch(`https://api.moxfield.com/v2/decks/${deckID}`)
+
 const data=await response.json()
 
 commander=data.commanders
@@ -81,19 +91,26 @@ cmc:card.card.cmc
 
 }else{
 
-resultBox.textContent="Consultando banco de cartas..."
+const rawList=document.getElementById("deckList").value.trim()
 
-const rawList=document.getElementById("deckList").value
+if(!rawList){
+resultBox.textContent="Cole uma lista de deck."
+return
+}
+
 const lines=rawList.split("\n")
 
 for(const line of lines){
 
 const match=line.match(/^(\d+)\s(.+)/)
 
-if(match){
+if(!match) continue
 
 const quantity=parseInt(match[1])
-const name=match[2].replace(/\(.*\)/,"").trim()
+
+let name=match[2]
+
+name=name.replace(/\(.*?\)/g,"").trim()
 
 const cardData=await fetchCardData(name)
 
@@ -105,8 +122,6 @@ quantity:quantity,
 type:cardData.type_line,
 cmc:cardData.cmc
 })
-
-}
 
 }
 
