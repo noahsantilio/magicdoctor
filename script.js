@@ -29,10 +29,10 @@ try{
 
 if(mode === "moxfield"){
 
-const link = document.getElementById("deckLink").value
+const link = document.getElementById("deckLink").value.trim()
 
-if(!link.includes("moxfield")){
-alert("Use um link do Moxfield")
+if(!link.includes("moxfield.com/decks/")){
+alert("Use um link válido do Moxfield")
 return
 }
 
@@ -43,6 +43,10 @@ resultBox.textContent = "Lendo deck..."
 const response = await fetch(
 `https://api.moxfield.com/v2/decks/all/${deckID}`
 )
+
+if(!response.ok){
+throw new Error("Deck não encontrado")
+}
 
 const data = await response.json()
 
@@ -56,7 +60,6 @@ cmc: card.card.cmc
 }else{
 
 const rawList = document.getElementById("deckList").value
-
 const lines = rawList.split("\n")
 
 lines.forEach(line=>{
@@ -205,7 +208,7 @@ ${warnings.length ? warnings.join("\n") : "Nenhum problema crítico detectado"}
 }catch(error){
 
 resultBox.textContent =
-"Erro ao analisar o deck."
+"Erro ao analisar o deck. Verifique se o link está correto e o deck é público."
 
 }
 
