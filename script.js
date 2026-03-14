@@ -1,237 +1,265 @@
 let chart
 
-function toggleInputMode(){
+// ============================
+// MINI BANCO DE CARTAS
+// ============================
 
-const mode=document.getElementById("inputMode").value
+const localCardDB = {
 
-document.getElementById("deckLink").style.display =
-mode==="moxfield"?"block":"none"
-
-document.getElementById("deckList").style.display =
-mode==="manual"?"block":"none"
-
-}
-
-function clearAnalysis(){
-
-document.getElementById("result").textContent="Resultado aparecerá aqui"
-
-document.getElementById("deckLink").value=""
-document.getElementById("deckList").value=""
-
-if(chart){
-chart.destroy()
-}
+"Sol Ring":{type:"Artifact",cmc:1,role:"ramp"},
+"Arcane Signet":{type:"Artifact",cmc:2,role:"ramp"},
+"Cultivate":{type:"Sorcery",cmc:3,role:"ramp"},
+"Rampant Growth":{type:"Sorcery",cmc:2,role:"ramp"},
+"Lightning Greaves":{type:"Artifact",cmc:2,role:"protection"},
+"Swiftfoot Boots":{type:"Artifact",cmc:2,role:"protection"},
+"Beast Whisperer":{type:"Creature",cmc:4,role:"draw"},
+"Guardian Project":{type:"Enchantment",cmc:4,role:"draw"},
+"Command Tower":{type:"Land",cmc:0},
+"Forest":{type:"Land",cmc:0},
+"Island":{type:"Land",cmc:0},
+"Mountain":{type:"Land",cmc:0},
+"Swamp":{type:"Land",cmc:0},
+"Plains":{type:"Land",cmc:0}
 
 }
 
-async function fetchCardData(name){
+// ============================
+// CACHE
+// ============================
 
-try{
+function getCache(){
 
-const response=await fetch(
-`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`
+const cache = localStorage.getItem("cardCache")
+
+return cache ? JSON.parse(cache) : {}
+
+}
+
+function saveCache(cache){
+
+localStorage.setItem("cardCache",JSON.stringify(cache))
+
+}
+
+// ============================
+// BUSCA Scryfall em lote
+// ============================
+
+async function fetchCardsBatch(names){
+
+const response = await fetch(
+"https://api.scryfall.com/cards/collection",
+{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+identifiers:names.map(n=>({name:n}))
+})
+}
 )
 
-if(!response.ok) return null
+const data = await response.json()
 
-return await response.json()
+const result={}
 
-}catch{
+data.data.forEach(card=>{
+
+result[card.name]={
+type:card.type_line,
+cmc:card.cmc,
+text:card.oracle_text || ""
+}
+
+})
+
+return result
+
+}
+
+// ============================
+// CLASSIFICAÇÃO ESTRATÉGICA
+// ============================
+
+function classifyCard(card){
+
+const text=(card.text || "").toLowerCase()
+
+if(text.includes("search your library")) return "tutor"
+
+if(text.includes("draw")) return "draw"
+
+if(text.includes("destroy target") || text.includes("exile target")) return "removal"
+
+if(text.includes("destroy all") || text.includes("each creature")) return "boardwipe"
+
+if(text.includes("add {") || text.includes("treasure")) return "ramp"
 
 return null
 
 }
 
-}
+// ============================
+// ANALISAR DECK
+// ============================
 
 async function analyzeDeck(){
 
 const mode=document.getElementById("inputMode").value
 const resultBox=document.getElementById("result")
 
-let cards=[]
-let commander="Desconhecido"
-let colors=[]
-let cmcBuckets={"0-1":0,"2":0,"3":0,"4":0,"5+":0}
-
 resultBox.textContent="Analisando deck..."
 
-try{
+let cardList=[]
 
-if(mode==="moxfield"){
+// ============================
+// PEGAR LISTA
+// ============================
 
-const link=document.getElementById("deckLink").value.trim()
+if(mode==="manual"){
 
-const match=link.match(/moxfield\.com\/decks\/([A-Za-z0-9\-_]+)/)
+const raw=document.getElementById("deckList").value
+const lines=raw.split("\n")
+
+for(const line of lines){
+
+const match=line.match(/^(\d+)\s(.+)/)
+if(!match) continue
+
+const qty=parseInt(match[1])
+const name=match[2].replace(/\(.*?\)/g,"").trim()
+
+cardList.push({name,qty})
+
+}
+
+}else{
+
+const link=document.getElementById("deckLink").value
+const match=link.match(/decks\/([A-Za-z0-9\-_]+)/)
 
 if(!match){
-resultBox.textContent="Link do Moxfield inválido."
+
+resultBox.textContent="Link inválido"
 return
+
 }
 
 const deckID=match[1]
 
 const response=await fetch(`https://api.moxfield.com/v2/decks/${deckID}`)
-
 const data=await response.json()
 
-commander=data.commanders
-?Object.values(data.commanders)[0].card.name
-:"Não identificado"
+Object.values(data.mainboard).forEach(card=>{
 
-colors=data.colorIdentity||[]
-
-cards=Object.values(data.mainboard).map(card=>({
+cardList.push({
 name:card.card.name,
-quantity:card.quantity,
-type:card.card.type_line,
-cmc:card.card.cmc
-}))
+qty:card.quantity
+})
+
+})
+
+}
+
+// ============================
+// BUSCA DADOS
+// ============================
+
+const cache=getCache()
+const missing=[]
+const cardData={}
+
+for(const entry of cardList){
+
+if(localCardDB[entry.name]){
+
+cardData[entry.name]=localCardDB[entry.name]
+
+}else if(cache[entry.name]){
+
+cardData[entry.name]=cache[entry.name]
 
 }else{
 
-const rawList=document.getElementById("deckList").value.trim()
+missing.push(entry.name)
 
-if(!rawList){
-resultBox.textContent="Cole uma lista de deck."
-return
 }
 
-const lines=rawList.split("\n")
+}
 
-for(const line of lines){
+// ============================
+// BUSCA API
+// ============================
 
-const match=line.match(/^(\d+)\s(.+)/)
+if(missing.length){
 
-if(!match) continue
+const apiData=await fetchCardsBatch(missing)
 
-const quantity=parseInt(match[1])
+Object.keys(apiData).forEach(name=>{
 
-let name=match[2]
+cardData[name]=apiData[name]
+cache[name]=apiData[name]
 
-name=name.replace(/\(.*?\)/g,"").trim()
-
-const cardData=await fetchCardData(name)
-
-if(cardData){
-
-cards.push({
-name:name,
-quantity:quantity,
-type:cardData.type_line,
-cmc:cardData.cmc
 })
 
+saveCache(cache)
+
+}
+
+// ============================
+// ANALISE
+// ============================
+
+let totals={
+cards:0,
+lands:0
+}
+
+let roles={
+ramp:0,
+draw:0,
+removal:0,
+boardwipe:0,
+tutor:0,
+protection:0,
+wincon:0
+}
+
+let cmcBuckets={"0-1":0,"2":0,"3":0,"4":0,"5+":0}
+
+for(const entry of cardList){
+
+const info=cardData[entry.name]
+
+if(!info) continue
+
+const qty=entry.qty
+
+totals.cards+=qty
+
+if(info.type.includes("Land")) totals.lands+=qty
+
+let cmc=info.cmc || 0
+
+if(cmc<=1) cmcBuckets["0-1"]+=qty
+else if(cmc===2) cmcBuckets["2"]+=qty
+else if(cmc===3) cmcBuckets["3"]+=qty
+else if(cmc===4) cmcBuckets["4"]+=qty
+else cmcBuckets["5+"]+=qty
+
+let role=info.role || classifyCard(info)
+
+if(role && roles[role]!==undefined){
+
+roles[role]+=qty
+
 }
 
 }
 
-}
-
-let totalCards=0
-let lands=0
-let creatures=0
-let artifacts=0
-let enchantments=0
-let instants=0
-let sorceries=0
-
-for(const card of cards){
-
-totalCards+=card.quantity
-
-if(card.type.includes("Land")) lands+=card.quantity
-if(card.type.includes("Creature")) creatures+=card.quantity
-if(card.type.includes("Artifact")) artifacts+=card.quantity
-if(card.type.includes("Enchantment")) enchantments+=card.quantity
-if(card.type.includes("Instant")) instants+=card.quantity
-if(card.type.includes("Sorcery")) sorceries+=card.quantity
-
-let cmc=card.cmc
-
-if(cmc<=1) cmcBuckets["0-1"]+=card.quantity
-else if(cmc===2) cmcBuckets["2"]+=card.quantity
-else if(cmc===3) cmcBuckets["3"]+=card.quantity
-else if(cmc===4) cmcBuckets["4"]+=card.quantity
-else cmcBuckets["5+"]+=card.quantity
-
-}
+// ============================
+// RESULTADO
+// ============================
 
 let warnings=[]
 
-if(totalCards!==100){
-warnings.push("Deck não tem exatamente 100 cartas")
-}
-
-if(lands<34){
-warnings.push("Poucos terrenos (ideal 34-38)")
-}
-
-resultBox.textContent=`
-
-===== Informações do Deck =====
-
-Commander: ${commander}
-
-Cores: ${colors.join(", ") || "Desconhecido"}
-
-Cartas totais: ${totalCards}
-
-===== Tipos de Carta =====
-
-Criaturas: ${creatures}
-Artefatos: ${artifacts}
-Encantamentos: ${enchantments}
-Instantâneas: ${instants}
-Feitiços: ${sorceries}
-Terrenos: ${lands}
-
-===== Curva de Mana =====
-
-0-1: ${cmcBuckets["0-1"]}
-2: ${cmcBuckets["2"]}
-3: ${cmcBuckets["3"]}
-4: ${cmcBuckets["4"]}
-5+: ${cmcBuckets["5+"]}
-
-===== Problemas Detectados =====
-
-${warnings.length ? warnings.join("\n") : "Nenhum problema crítico detectado"}
-
-`
-
-drawChart(cmcBuckets)
-
-}catch(error){
-
-resultBox.textContent="Erro ao analisar deck."
-
-}
-
-}
-
-function drawChart(data){
-
-const ctx=document.getElementById("manaCurveChart")
-
-if(chart) chart.destroy()
-
-chart=new Chart(ctx,{
-type:"bar",
-data:{
-labels:["0-1","2","3","4","5+"],
-datasets:[{
-label:"Curva de Mana",
-data:[
-data["0-1"],
-data["2"],
-data["3"],
-data["4"],
-data["5+"]
-]
-}]
-}
-})
-
-}
+if(totals.cards!==100) warnings.push("Dec
