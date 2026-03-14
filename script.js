@@ -1,14 +1,40 @@
+function toggleInputMode(){
+
+const mode = document.getElementById("inputMode").value
+const linkField = document.getElementById("deckLink")
+const listField = document.getElementById("deckList")
+
+if(mode === "moxfield"){
+
+linkField.style.display = "block"
+listField.style.display = "none"
+
+}else{
+
+linkField.style.display = "none"
+listField.style.display = "block"
+
+}
+
+}
+
 async function analyzeDeck(){
 
-const link = document.getElementById("deckLink").value
+const mode = document.getElementById("inputMode").value
 const resultBox = document.getElementById("result")
+
+let cards = []
+
+try{
+
+if(mode === "moxfield"){
+
+const link = document.getElementById("deckLink").value
 
 if(!link.includes("moxfield")){
 alert("Use um link do Moxfield")
 return
 }
-
-try{
 
 const deckID = link.split("/decks/")[1].split("?")[0]
 
@@ -20,7 +46,37 @@ const response = await fetch(
 
 const data = await response.json()
 
-const cards = Object.values(data.mainboard)
+cards = Object.values(data.mainboard).map(card => ({
+name: card.card.name,
+quantity: card.quantity,
+type: card.card.type_line,
+cmc: card.card.cmc
+}))
+
+}else{
+
+const rawList = document.getElementById("deckList").value
+
+const lines = rawList.split("\n")
+
+lines.forEach(line=>{
+
+const match = line.match(/^(\d+)\s(.+)/)
+
+if(match){
+
+cards.push({
+quantity: parseInt(match[1]),
+name: match[2],
+type:"",
+cmc:0
+})
+
+}
+
+})
+
+}
 
 let totalCards = 0
 let lands = 0
@@ -37,87 +93,79 @@ let cmcBuckets = {
 }
 
 const rampCards = [
-"Sol Ring","Arcane Signet","Fellwar Stone","Talisman of Progress",
-"Cultivate","Kodama's Reach","Rampant Growth","Nature's Lore",
-"Three Visits","Farseek","Skyshroud Claim","Explosive Vegetation"
+"Sol Ring","Arcane Signet","Fellwar Stone",
+"Cultivate","Kodama's Reach","Rampant Growth",
+"Nature's Lore","Three Visits","Farseek"
 ]
 
 const drawCards = [
-"Harmonize","Rishkar's Expertise","Return of the Wildspeaker",
-"Guardian Project","Beast Whisperer","Toski, Bearer of Secrets",
-"Phyrexian Arena","Rhystic Study","Mystic Remora",
-"Fact or Fiction","Wheel of Fortune"
+"Harmonize","Rishkar's Expertise",
+"Return of the Wildspeaker","Guardian Project",
+"Beast Whisperer","Rhystic Study",
+"Mystic Remora","Fact or Fiction"
 ]
 
 const removalCards = [
-"Swords to Plowshares","Path to Exile","Beast Within",
-"Chaos Warp","Generous Gift","Anguished Unmaking",
-"Vindicate","Cyclonic Rift","Rapid Hybridization",
-"Pongify","Assassin's Trophy"
+"Swords to Plowshares","Path to Exile",
+"Beast Within","Chaos Warp",
+"Generous Gift","Cyclonic Rift"
 ]
 
 cards.forEach(card => {
 
 totalCards += card.quantity
 
-if(card.card.type_line.includes("Land")){
+if(card.type && card.type.includes("Land")){
 lands += card.quantity
 }
 
-if(rampCards.includes(card.card.name)){
+if(rampCards.includes(card.name)){
 ramp += card.quantity
 }
 
-if(drawCards.includes(card.card.name)){
+if(drawCards.includes(card.name)){
 draw += card.quantity
 }
 
-if(removalCards.includes(card.card.name)){
+if(removalCards.includes(card.name)){
 removal += card.quantity
 }
 
-const cmc = card.card.cmc
+if(card.cmc !== undefined){
 
-if(cmc <= 1) cmcBuckets["0-1"] += card.quantity
-else if(cmc == 2) cmcBuckets["2"] += card.quantity
-else if(cmc == 3) cmcBuckets["3"] += card.quantity
-else if(cmc == 4) cmcBuckets["4"] += card.quantity
+if(card.cmc <= 1) cmcBuckets["0-1"] += card.quantity
+else if(card.cmc == 2) cmcBuckets["2"] += card.quantity
+else if(card.cmc == 3) cmcBuckets["3"] += card.quantity
+else if(card.cmc == 4) cmcBuckets["4"] += card.quantity
 else cmcBuckets["5+"] += card.quantity
+
+}
 
 })
 
-const commander =
-data.commanders ?
-Object.values(data.commanders)[0].card.name :
-"Unknown"
-
 let warnings = []
 
-if(totalCards != 100){
+if(totalCards !== 100){
 warnings.push("Deck não tem exatamente 100 cartas")
 }
 
 if(lands < 34){
-warnings.push("Poucos terrenos (recomendado 34-38)")
+warnings.push("Poucos terrenos (ideal 34-38)")
 }
 
 if(ramp < 8){
-warnings.push("Pouco ramp (recomendado 8+)")
+warnings.push("Pouco ramp (ideal 8+)")
 }
 
 if(draw < 6){
-warnings.push("Pouco card draw (recomendado 6+)")
+warnings.push("Pouco card draw (ideal 6+)")
 }
 
 if(removal < 5){
-warnings.push("Poucas remoções (recomendado 5+)")
+warnings.push("Poucas remoções (ideal 5+)")
 }
 
-let powerScore = 0
-
-powerScore += ramp
-powerScore += draw
-powerScore += removal
+let powerScore = ramp + draw + removal
 
 let powerLevel = "Casual"
 
@@ -127,11 +175,9 @@ else if(powerScore > 12) powerLevel = "Mid Power"
 
 resultBox.textContent = `
 
-Commander: ${commander}
+===== Estatísticas =====
 
 Cartas totais: ${totalCards}
-
-===== Estatísticas =====
 
 Terrenos: ${lands}
 Ramp: ${ramp}
@@ -159,7 +205,7 @@ ${warnings.length ? warnings.join("\n") : "Nenhum problema crítico detectado"}
 }catch(error){
 
 resultBox.textContent =
-"Erro ao ler o deck. Verifique se o link é válido e público."
+"Erro ao analisar o deck."
 
 }
 
