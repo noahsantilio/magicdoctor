@@ -2,21 +2,71 @@
 <html>
 
 <head>
+
 <title>Magic Doctor</title>
+
+<style>
+
+body{
+font-family: Arial;
+max-width:900px;
+margin:auto;
+padding:40px;
+background:#f7f7f7;
+}
+
+h1{
+text-align:center;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+font-size:16px;
+}
+
+button{
+padding:12px;
+margin-top:10px;
+font-size:16px;
+cursor:pointer;
+}
+
+pre{
+background:white;
+padding:20px;
+margin-top:20px;
+border-radius:6px;
+overflow:auto;
+}
+
+</style>
+
 </head>
 
 <body>
 
 <h1>Magic Doctor</h1>
 
-<p>Cole um link de deck do Moxfield</p>
+<p>Cole um link de deck do Moxfield:</p>
 
-<input id="deckLink">
+<input 
+id="deckLink" 
+placeholder="https://www.moxfield.com/decks/XXXXX"
+>
 
-<button>
-Ler Deck
+<button onclick="analyzeDeck()">
+Analisar Deck
 </button>
+
+<pre id="result">
+Resultado aparecerá aqui
+</pre>
+
+<script src="script.js"></script>
 
 </body>
 
 </html>
+
