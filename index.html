@@ -6,90 +6,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Magic Doctor - EDH Deck Analyzer</title>
+<title>Magic Doctor</title>
 
 <style>
 
 body{
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial;
 max-width:1100px;
 margin:auto;
 padding:40px;
-background:#f4f6f8;
-}
-
-h1{
-margin-bottom:5px;
-}
-
-.subtitle{
-color:#555;
-margin-bottom:25px;
+background:#f5f5f5;
 }
 
 textarea{
 width:100%;
 height:260px;
-padding:12px;
 font-family:monospace;
-border-radius:6px;
-border:1px solid #ccc;
-margin-top:10px;
 }
 
 button{
-margin-top:15px;
+margin-top:10px;
 margin-right:10px;
-padding:10px 22px;
-border:none;
-border-radius:6px;
-background:#3b82f6;
-color:white;
-font-weight:bold;
-cursor:pointer;
-}
-
-button:hover{
-background:#2563eb;
-}
-
-.clearBtn{
-background:#6b7280;
-}
-
-.clearBtn:hover{
-background:#4b5563;
+padding:10px 20px;
 }
 
 #result{
-
 margin-top:30px;
 background:white;
-padding:25px;
+padding:20px;
 border-radius:8px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
-
 }
 
-.metric{
-margin-bottom:10px;
-}
-
-.section{
-margin-top:25px;
-}
-
-.tooltip{
-border-bottom:1px dotted #444;
-cursor:help;
-}
-
-.footer{
-
-margin-top:40px;
-font-size:12px;
-color:#666;
-
+#cardCounter{
+margin-top:8px;
+font-weight:bold;
+color:#444;
 }
 
 </style>
@@ -100,65 +51,24 @@ color:#666;
 
 <h1>Magic Doctor</h1>
 
-<div class="subtitle">
-Ferramenta de análise de decks de Commander de <strong>Magic: The Gathering</strong>.
-Cole abaixo a lista completa do seu deck.
-</div>
+<p>Cole a lista do deck abaixo:</p>
 
-<textarea id="deckList" placeholder="Exemplo:
+<textarea id="deckList"></textarea>
 
-1 Sol Ring
-1 Arcane Signet
-1 Llanowar Elves
-1 Cultivate
-1 Beast Whisperer
-1 Craterhoof Behemoth
-
-..."></textarea>
+<div id="cardCounter">Cartas detectadas: 0</div>
 
 <br>
 
 <button onclick="analyzeDeck()">Analisar Deck</button>
-
-<button class="clearBtn" onclick="clearAnalysis()">Limpar Análise</button>
+<button onclick="clearAnalysis()">Limpar</button>
 
 <div id="result"></div>
 
-<div class="footer">
-
-Magic Doctor analisa:
-
-• estrutura do deck  
-• ramp  
-• card draw  
-• remoções  
-• interação  
-• curva de mana  
-• arquétipos  
-• combos  
-• combos infinitos  
-• condições de vitória  
-• power level estimado
-
-</div>
-
-<!-- ========================= -->
-<!-- BASES DE DADOS DO SISTEMA -->
-<!-- ========================= -->
-
 <script src="data/combos.js"></script>
-
 <script src="data/archetypes.js"></script>
-
 <script src="data/staples.js"></script>
-
 <script src="data/winconditions.js"></script>
-
 <script src="data/infiniteCombos.js"></script>
-
-<!-- ========================= -->
-<!-- MOTOR PRINCIPAL -->
-<!-- ========================= -->
 
 <script src="script.js"></script>
 
