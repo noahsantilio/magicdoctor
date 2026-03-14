@@ -1,295 +1,84 @@
-const SCRYFALL_API="https://api.scryfall.com/cards/collection"
+const SCRYFALL="https://api.scryfall.com/cards/collection"
 
-let cardCache = JSON.parse(localStorage.getItem("cardCache") || "{}")
+let cache={}
 
-// ========================
-// CONTADOR DE CARTAS
-// ========================
+document.getElementById("deckInput").addEventListener("input",countCards)
 
-document.getElementById("deckList").addEventListener("input",()=>{
+function cleanName(name){
 
-const deck=parseDeckList(document.getElementById("deckList").value)
+return name
+.replace(/\(.+\)/,"")
+.replace(/[0-9]+$/,"")
+.trim()
+
+}
+
+function parseDeck(text){
+
+let deck=[]
+
+text.split("\n").forEach(line=>{
+
+const m=line.match(/^(\d+)\s(.+)/)
+
+if(!m)return
+
+deck.push({
+qty:parseInt(m[1]),
+name:cleanName(m[2])
+})
+
+})
+
+return deck
+
+}
+
+function countCards(){
+
+const deck=parseDeck(document.getElementById("deckInput").value)
 
 let total=0
 
-for(const c of deck) total+=c.qty
+deck.forEach(c=>total+=c.qty)
 
-document.getElementById("cardCounter").innerText="Cartas detectadas: "+total
-
-})
-
-// ========================
-// LIMPAR
-// ========================
-
-function clearAnalysis(){
-
-document.getElementById("result").innerHTML=""
-document.getElementById("deckList").value=""
-document.getElementById("cardCounter").innerText="Cartas detectadas: 0"
+document.getElementById("counter").innerText="Cartas detectadas: "+total
 
 }
-
-// ========================
-// PARSER
-// ========================
-
-function parseDeckList(text){
-
-const lines=text.split("\n")
-
-let cards=[]
-
-for(let line of lines){
-
-line=line.trim()
-
-if(!line)continue
-
-const match=line.match(/^(\d+)\s(.+)/)
-
-if(!match)continue
-
-let qty=parseInt(match[1])
-
-let name=match[2]
-.replace(/\(.*?\)/g,"")
-.replace(/\[.*?\]/g,"")
-.trim()
-
-cards.push({name,qty})
-
-}
-
-return cards
-
-}
-
-// ========================
-// FETCH CARTAS
-// ========================
 
 async function fetchCards(names){
 
-const missing=names.filter(n=>!cardCache[n])
+const batches=[]
 
-if(missing.length===0) return
+while(names.length) batches.push(names.splice(0,75))
 
-const response=await fetch(SCRYFALL_API,{
+for(const batch of batches){
 
+const res=await fetch(SCRYFALL,{
 method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
+headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
-identifiers:missing.map(n=>({name:n}))
+identifiers:batch.map(n=>({name:n}))
+})
 })
 
-})
+const data=await res.json()
 
-const data=await response.json()
+data.data.forEach(card=>{
 
-for(const card of data.data){
+cache[card.name]={
 
-cardCache[card.name]={
-
+type:card.type_line.toLowerCase(),
 text:(card.oracle_text||"").toLowerCase(),
-type:(card.type_line||"").toLowerCase(),
-cmc:card.cmc||0
+cmc:card.cmc
+
+}
+
+})
 
 }
 
 }
-
-localStorage.setItem("cardCache",JSON.stringify(cardCache))
-
-}
-
-// ========================
-// ANALISE ESTRUTURAL
-// ========================
-
-function analyzeStructure(deck){
-
-let lands=0
-let ramp=0
-let draw=0
-let removal=0
-let interaction=0
-let cmcTotal=0
-let count=0
-
-for(const card of deck){
-
-const info=cardCache[card.name]
-
-if(!info)continue
-
-for(let i=0;i<card.qty;i++){
-
-count++
-
-cmcTotal+=info.cmc
-
-if(info.type.includes("land")) lands++
-
-if(info.text.includes("search your library for a land")) ramp++
-
-if(info.text.includes("draw")) draw++
-
-if(info.text.includes("destroy")||info.text.includes("exile")) removal++
-
-if(info.text.includes("counter target")) interaction++
-
-}
-
-}
-
-return{
-
-lands,
-ramp,
-draw,
-removal,
-interaction,
-avgCMC:(cmcTotal/count).toFixed(2)
-
-}
-
-}
-
-// ========================
-// DETECTAR COMBOS
-// ========================
-
-function detectCombos(deck){
-
-let found=[]
-
-for(const combo of combos){
-
-let ok=true
-
-for(const piece of combo.cards){
-
-if(!deck.find(c=>c.name===piece)) ok=false
-
-}
-
-if(ok) found.push(combo.name)
-
-}
-
-return found
-
-}
-
-// ========================
-// DETECTAR INFINITE
-// ========================
-
-function detectInfinite(deck){
-
-let found=[]
-
-for(const combo of infiniteCombos){
-
-let ok=true
-
-for(const piece of combo.cards){
-
-if(!deck.find(c=>c.name===piece)) ok=false
-
-}
-
-if(ok) found.push(combo.name)
-
-}
-
-return found
-
-}
-
-// ========================
-// DETECTAR WINCON
-// ========================
-
-function detectWinConditions(deck){
-
-let found=[]
-
-for(const win of winConditions){
-
-if(deck.find(c=>c.name===win)) found.push(win)
-
-}
-
-return found
-
-}
-
-// ========================
-// DETECTAR ARQUETIPOS
-// ========================
-
-function detectArchetypes(deck){
-
-let scores={}
-
-for(const key in archetypes){
-
-scores[key]=0
-
-for(const card of deck){
-
-const info=cardCache[card.name]
-
-if(!info) continue
-
-for(const keyword of archetypes[key]){
-
-if(info.text.includes(keyword))
-scores[key]+=card.qty
-
-}
-
-}
-
-}
-
-return scores
-
-}
-
-// ========================
-// POWER LEVEL
-// ========================
-
-function calculatePower(structure,combos,infinite){
-
-let score=0
-
-if(structure.ramp>=10) score+=1
-if(structure.draw>=10) score+=1
-if(structure.removal>=8) score+=1
-if(structure.avgCMC<3) score+=1
-if(combos.length>0) score+=2
-if(infinite.length>0) score+=3
-
-if(score<=2) return "Battlecruiser"
-if(score<=4) return "Casual"
-if(score<=6) return "Focused"
-if(score<=8) return "High Power"
-
-return "cEDH"
-
-}
-
-// ========================
-// ANALISE PRINCIPAL
-// ========================
 
 async function analyzeDeck(){
 
@@ -297,65 +86,87 @@ const result=document.getElementById("result")
 
 result.innerHTML="Analisando..."
 
-const raw=document.getElementById("deckList").value
+const timeout=setTimeout(()=>{
 
-const deck=parseDeckList(raw)
+result.innerHTML="Erro: análise demorou mais que 3 minutos."
+
+},180000)
+
+try{
+
+const deck=parseDeck(document.getElementById("deckInput").value)
 
 const names=[...new Set(deck.map(c=>c.name))]
 
 await fetchCards(names)
 
-const structure=analyzeStructure(deck)
+let lands=0,ramp=0,draw=0,removal=0,cmc=0,count=0
 
-const combosFound=detectCombos(deck)
+deck.forEach(card=>{
 
-const infiniteFound=detectInfinite(deck)
+const info=cache[card.name]
 
-const winFound=detectWinConditions(deck)
+if(!info)return
 
-const archetypeScores=detectArchetypes(deck)
+for(let i=0;i<card.qty;i++){
 
-const power=calculatePower(structure,combosFound,infiniteFound)
+count++
 
-// ========================
-// RENDER
-// ========================
+cmc+=info.cmc
+
+if(info.type.includes("land"))lands++
+
+if(info.text.includes("search your library"))ramp++
+
+if(info.text.includes("draw"))draw++
+
+if(info.text.includes("destroy")||info.text.includes("exile"))removal++
+
+}
+
+})
+
+const avg=(cmc/count).toFixed(2)
 
 result.innerHTML=`
 
-<h2>Resultado da análise</h2>
+<h2>Resumo do Deck</h2>
 
-Power Level: ${power}
-
-<h3>Estrutura</h3>
-
-Terrenos: ${structure.lands}<br>
-Ramp: ${structure.ramp}<br>
-Card Draw: ${structure.draw}<br>
-Removal: ${structure.removal}<br>
-Interaction: ${structure.interaction}<br>
-CMC médio: ${structure.avgCMC}
-
-<h3>Combos</h3>
-
-${combosFound.length?combosFound.join("<br>"):"Nenhum"}
-
-<h3>Combos Infinitos</h3>
-
-${infiniteFound.length?infiniteFound.join("<br>"):"Nenhum"}
-
-<h3>Win Conditions</h3>
-
-${winFound.length?winFound.join("<br>"):"Nenhuma"}
-
-<h3>Arquétipos</h3>
-
-${Object.entries(archetypeScores)
-.sort((a,b)=>b[1]-a[1])
-.slice(0,3)
-.map(a=>a[0]+" ("+a[1]+")")
-.join("<br>")}
+Cartas: ${count}<br>
+Terrenos: ${lands}<br>
+Ramp: ${ramp}<br>
+Draw: ${draw}<br>
+Remoções: ${removal}<br>
+CMC médio: ${avg}
 
 `
+
+clearTimeout(timeout)
+
+}catch(e){
+
+result.innerHTML="Erro durante análise: "+e
+
+}
+
+}
+
+function clearDeck(){
+
+document.getElementById("deckInput").value=""
+document.getElementById("result").innerHTML=""
+document.getElementById("counter").innerText="Cartas detectadas: 0"
+
+}
+
+function openPopup(){
+
+document.getElementById("popup").style.display="block"
+
+}
+
+function closePopup(){
+
+document.getElementById("popup").style.display="none"
 
 }
