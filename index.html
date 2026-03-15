@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor v7.5 - Tactical Engine</title>
+    <title>Magic Doctor v8.0 - Heuristic Intelligence</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,40 +13,45 @@
         <header>
             <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
-            <p class="subtitle">Análise Estratégica e Tática <span class="v-tag">v7.5</span></p>
+            <p class="subtitle">Análise de Heurística e Sinergia <span class="v-tag">v8.0</span></p>
         </header>
 
         <section class="deck-input-section">
-            <textarea id="decklist" placeholder="1 Heliod, Sun-Crowned&#10;1 Walking Ballista"></textarea>
+            <textarea id="decklist" placeholder="Exemplo:&#10;1 Heliod, Sun-Crowned&#10;1 Walking Ballista&#10;1 Sol Ring&#10;1 Skullclamp"></textarea>
             <div class="input-footer">
-                <span class="instruction">Cole sua lista de deck (Suporta códigos de coleção).</span>
+                <span class="instruction">Cole sua lista. O Doutor detectará combos e mecânicas via Oracle Text.</span>
                 <div class="counter-badge">Cartas: <span id="card-count">0</span></div>
             </div>
         </section>
 
         <div class="button-group">
-            <button class="btn-primary" onclick="analisarDeck()">Analisar Deck</button>
-            <button class="btn-secondary" onclick="limparTudo()">Limpar Lista</button>
+            <button class="btn-primary" onclick="analisarDeck()">Analisar Sinergias</button>
+            <button class="btn-secondary" onclick="limparTudo()">Limpar Deck</button>
         </div>
 
         <div id="status-area"></div>
         <div id="loading" class="hidden">
             <div class="spinner"></div>
-            <p id="loading-text">O Doutor está analisando as sinergias...</p>
+            <p id="loading-text">Escaneando Oracle Text para identificar heurísticas...</p>
         </div>
 
         <div id="resultados" class="hidden">
+            
             <div class="glass-card highlight">
-                <h2>🧬 Identidade Estratégica</h2>
+                <h2>🧬 Identidade e Estratégia</h2>
                 <div class="archetype-container">
                     <div class="arch-box">
-                        <small>Arquétipo Principal</small>
+                        <small>Arquétipo Detectado</small>
                         <div id="res-arquetipo" class="arch-value">-</div>
                         <p id="res-arquetipo-desc" class="arch-desc"></p>
                     </div>
                     <div class="arch-box">
-                        <small>Cores da Identidade</small>
+                        <small>Cores do Deck</small>
                         <div id="res-color" class="color-text">-</div>
+                        <div style="margin-top: 15px;">
+                            <small>Comandante Identificado</small>
+                            <div id="res-commander" class="commander-name">-</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -59,20 +64,28 @@
                         <ul id="res-wincons"></ul>
                     </div>
                     <div class="tactical-box">
-                        <h3>Combos Identificados</h3>
+                        <h3>Combos Detectados</h3>
                         <ul id="res-combos"></ul>
                     </div>
                 </div>
             </div>
 
+            <div class="glass-card highlight">
+                <h2>🔍 Sinergias e Mecânicas Detectadas</h2>
+                <div id="res-tags" class="tag-cloud">
+                    </div>
+            </div>
+
             <div class="grid-layout">
                 <div class="glass-card">
                     <h2>📈 Curva de Mana</h2>
-                    <div class="chart-wrapper"><canvas id="manaChart"></canvas></div>
+                    <div class="chart-wrapper">
+                        <canvas id="manaChart"></canvas>
+                    </div>
                     <p class="cmc-label">CMC Médio: <span id="res-cmc">-</span></p>
                 </div>
                 <div class="glass-card">
-                    <h2>⚡ Estatísticas</h2>
+                    <h2>⚡ Estatísticas de Jogo</h2>
                     <div class="perf-list">
                         <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
                         <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
@@ -87,19 +100,14 @@
             </div>
 
             <div class="glass-card">
-                <h2>📋 Distribuição por Tipo</h2>
-                <div id="tipo-columns-container" class="type-grid"></div>
+                <h2>📋 Inventário por Tipo</h2>
+                <div id="tipo-columns-container" class="type-grid">
+                    </div>
             </div>
-            
-            <div class="glass-card">
-                <h2>👨‍✈️ Comandante</h2>
-                <p id="res-commander" class="commander-name">-</p>
-            </div>
-        </div>
 
-        <footer><p class="disclaimer">Magic Doctor v7.5 | Desenvolvido para Commander</p></footer>
-    </div>
-
-    <script src="script.js"></script>
+        </div> <footer>
+            <p class="disclaimer">Magic Doctor v8.0 | Algoritmos de análise baseados em Oracle Text (Scryfall API)</p>
+        </footer>
+    </div> <script src="script.js"></script>
 </body>
 </html>
