@@ -1,30 +1,23 @@
 /**
- * MAGIC DOCTOR v3.0
- * Atualização: Fuzzy Search & String Sanitizer
+ * MAGIC DOCTOR v4.5
+ * Módulo de Estabilidade e Tratamento de Exceções
  */
 
 let myChart = null;
 
-// 1. LIMPEZA AVANÇADA DE NOMES
+// Sanitização robusta: Remove quantidades, edições e trata nomes de cartas de duas faces
 function sanitizarNome(linha) {
     if (!linha) return "";
+    let nome = linha.trim().replace(/^(\d+\s*[xX]?\s+)/, ""); // Remove "1x "
+    nome = nome.split('(')[0].split('[')[0].split('*')[0]; // Remove (Set) e [Edição]
     
-    // Remove a quantidade inicial (ex: "1x ", "1 ")
-    let nome = linha.trim().replace(/^(\d+\s*[xX]?\s+)/, "");
+    // Trata cartas como "Toph // Blind Bandit" pegando apenas o primeiro nome para a busca
+    if (nome.includes("//")) nome = nome.split("//")[0];
     
-    // Remove qualquer coisa entre parênteses, colchetes ou depois de asteriscos
-    // Ex: "Toph (TLE) 145" -> "Toph"
-    nome = nome.replace(/\(.*?\)/g, "");
-    nome = nome.replace(/\[.*?\]/g, "");
-    nome = nome.replace(/\*+/g, "");
-
-    // Remove números de colecionador soltos no final da linha (ex: " 145")
-    nome = nome.replace(/\s+\d+$/, "");
-
     return nome.trim();
 }
 
-// 2. CONTADOR DE CARTAS (Versão 2.5/3.0)
+// Contador em tempo real
 document.getElementById('decklist').addEventListener('input', function() {
     const texto = this.value.trim();
     if (!texto) { document.getElementById('card-count').innerText = "0"; return; }
@@ -38,7 +31,6 @@ document.getElementById('decklist').addEventListener('input', function() {
     document.getElementById('card-count').innerText = total;
 });
 
-// 3. FUNÇÃO LIMPAR
 function limparTudo() {
     document.getElementById('decklist').value = "";
     document.getElementById('card-count').innerText = "0";
@@ -48,7 +40,6 @@ function limparTudo() {
     if (myChart) { myChart.destroy(); myChart = null; }
 }
 
-// 4. ANÁLISE COM BUSCA FUZZY (ALTERNATIVA PARA CORREÇÃO DE ERRO)
 async function analisarDeck() {
     const statusArea = document.getElementById('status-area');
     const loading = document.getElementById('loading');
@@ -56,90 +47,119 @@ async function analisarDeck() {
     const loadingText = document.getElementById('loading-text');
     
     const linhas = document.getElementById('decklist').value.split('\n').filter(l => l.trim() !== "");
-    
-    if (linhas.length === 0) { exibirErro("A lista está vazia!"); return; }
+    if (linhas.length === 0) { exibirErro("Cole sua lista!"); return; }
 
     statusArea.innerHTML = "";
     resultados.classList.add('hidden');
     loading.classList.remove('hidden');
 
-    let deckData = { cmcTotal: 0, countNonLands: 0, curve: [0,0,0,0,0,0,0], ramp: 0, draw: 0, removal: 0, commander: "", colors: "" };
+    let stats = {
+        cmcTotal: 0, count: 0, ramp: 0, draw: 0, removal: 0, protection: 0,
+        tags: { voltron: 0, aristocrats: 0, spellslinger: 0, tokens: 0, combo: 0, stax: 0 },
+        curve: [0,0,0,0,0,0,0], colors: "", commander: ""
+    };
+    let erros = [];
 
-    try {
-        for (let i = 0; i < linhas.length; i++) {
-            const nomeParaBusca = sanitizarNome(linhas[i]);
-            if (!nomeParaBusca) continue;
+    for (let i = 0; i < linhas.length; i++) {
+        const nomeParaBusca = sanitizarNome(linhas[i]);
+        if (!nomeParaBusca) continue;
 
-            loadingText.innerText = `Analisando (${i+1}/${linhas.length}): ${nomeParaBusca}`;
+        loadingText.innerText = `Processando ${i+1}/${linhas.length}: ${nomeParaBusca}`;
 
-            // USANDO 'FUZZY' EM VEZ DE 'EXACT' PARA EVITAR ERROS DE CARACTERES ESPECIAIS
-            const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(nomeParaBusca)}`;
-            
-            const response = await fetch(url);
+        try {
+            // Requisição com busca fuzzy
+            const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(nomeParaBusca)}`);
             
             if (!response.ok) {
-                throw new Error(`O Doutor não encontrou: "${nomeParaBusca}". Tente remover códigos de coleção desta linha.`);
+                erros.push(nomeParaBusca);
+                continue; // Pula para a próxima carta sem quebrar o código
             }
 
             const data = await response.json();
-
-            // Comandante é a primeira carta válida
-            if (!deckData.commander) {
-                deckData.commander = data.name;
-                deckData.colors = (data.color_identity && data.color_identity.length > 0) ? data.color_identity.join('') : 'C';
+            
+            // Dados do Comandante (Primeira linha)
+            if (i === 0) {
+                stats.commander = data.name;
+                stats.colors = data.color_identity.join('') || 'C';
             }
 
-            // Estatísticas
-            if (!data.type_line.includes("Land")) {
+            // Estatísticas e CMC
+            if (!data.type_line.toLowerCase().includes("land")) {
                 let cmc = data.cmc || 0;
-                deckData.cmcTotal += cmc;
-                deckData.countNonLands++;
-                deckData.curve[Math.min(Math.floor(cmc), 6)]++;
+                stats.cmcTotal += cmc;
+                stats.count++;
+                stats.curve[Math.min(Math.floor(cmc), 6)]++;
             }
 
+            // Análise Oracle
             const oracle = data.oracle_text ? data.oracle_text.toLowerCase() : "";
-            if (oracle.includes("add") || (oracle.includes("search") && oracle.includes("land"))) deckData.ramp++;
-            if (oracle.includes("draw")) deckData.draw++;
-            if (oracle.includes("destroy") || oracle.includes("exile") || oracle.includes("counter target")) deckData.removal++;
+            const types = data.type_line.toLowerCase();
 
-            // Respeitar limite da API
-            await new Promise(r => setTimeout(r, 70));
+            if (oracle.includes("add") || (oracle.includes("search") && oracle.includes("land"))) stats.ramp++;
+            if (oracle.includes("draw")) stats.draw++;
+            if (oracle.includes("destroy") || oracle.includes("exile") || oracle.includes("counter target")) stats.removal++;
+            if (oracle.includes("hexproof") || oracle.includes("indestructible") || oracle.includes("protection from")) stats.protection++;
+
+            // Tags de Arquétipo
+            if (types.includes("equipment") || types.includes("aura")) stats.tags.voltron++;
+            if (oracle.includes("sacrifice") || oracle.includes("dies")) stats.tags.aristocrats++;
+            if (types.includes("instant") || types.includes("sorcery")) stats.tags.spellslinger++;
+            if (oracle.includes("create") && oracle.includes("token")) stats.tags.tokens++;
+            if (oracle.includes("win the game")) stats.tags.combo++;
+
+            // Delay de 80ms para evitar 429 (Too Many Requests)
+            await new Promise(r => setTimeout(r, 80));
+
+        } catch (e) {
+            erros.push(nomeParaBusca);
         }
-
-        exibirResultados(deckData);
-
-    } catch (err) {
-        exibirErro(err.message);
-    } finally {
-        loading.classList.add('hidden');
     }
+
+    if (erros.length > 0) {
+        exibirErro(`O Doutor pulou ${erros.length} cartas não identificadas (Ex: ${erros[0]}).`);
+    }
+
+    processarArquétipo(stats);
+    exibirResultados(stats);
+    loading.classList.add('hidden');
+}
+
+function processarArquétipo(stats) {
+    const t = stats.tags;
+    let p = "Midrange";
+    if (t.voltron > 6) p = "Voltron";
+    else if (t.aristocrats > 8) p = "Aristocrats";
+    else if (t.spellslinger > 12) p = "Spellslinger";
+    else if (t.tokens > 8) p = "Tokens / Go Wide";
+    else if (stats.ramp > 12 && (stats.cmcTotal/stats.count) > 3.3) p = "Stompy / Ramp";
+    
+    document.getElementById('res-arquetipo').innerText = p;
 }
 
 function exibirErro(msg) {
-    document.getElementById('status-area').innerHTML = `<div class="error-msg">❌ <strong>Erro:</strong><br>${msg}</div>`;
+    const area = document.getElementById('status-area');
+    area.innerHTML = `<div class="error-msg">ℹ️ ${msg}</div>`;
 }
 
-function exibirResultados(data) {
+function exibirResultados(stats) {
     document.getElementById('resultados').classList.remove('hidden');
-    document.getElementById('res-commander').innerText = data.commander;
-    document.getElementById('res-color').innerText = data.colors;
+    document.getElementById('res-commander').innerText = stats.commander || "Não Identificado";
+    document.getElementById('res-color').innerText = stats.colors;
+    document.getElementById('res-cmc').innerText = stats.count > 0 ? (stats.cmcTotal / stats.count).toFixed(2) : "0";
     
-    const mediaCmc = data.countNonLands > 0 ? (data.cmcTotal / data.countNonLands).toFixed(2) : "0";
-    document.getElementById('res-cmc').innerText = mediaCmc;
-    
-    document.getElementById('stat-ramp').innerText = data.ramp + " fontes";
-    document.getElementById('stat-draw').innerText = data.draw + " cartas";
-    document.getElementById('stat-remocao').innerText = data.removal + " cartas";
-    document.getElementById('res-arquetipo').innerText = data.ramp > 12 ? "Stompy / Ramp" : "Midrange";
+    document.getElementById('stat-ramp').innerText = stats.ramp;
+    document.getElementById('stat-draw').innerText = stats.draw;
+    document.getElementById('stat-remocao').innerText = stats.removal;
+    document.getElementById('stat-protecao').innerText = stats.protection;
 
-    // Algoritmo de Poder v3.0
-    let p = 4.0;
-    if (data.ramp > 11) p += 1.5;
-    if (data.draw > 10) p += 1.5;
-    if (parseFloat(mediaCmc) < 3.2) p += 1.5;
-    if (data.removal > 8) p += 1.0;
+    // Power Level
+    let power = 4.0;
+    if (stats.ramp > 10) power += 1.5;
+    if (stats.draw > 10) power += 1.5;
+    if (stats.removal > 8) power += 1.0;
+    if (stats.count > 0 && (stats.cmcTotal/stats.count) < 3.2) power += 1.5;
     
-    document.getElementById('stat-power').innerText = Math.min(p, 10).toFixed(1);
+    document.getElementById('stat-power').innerText = Math.min(power, 10).toFixed(1);
 
     const ctx = document.getElementById('manaChart').getContext('2d');
     if (myChart) myChart.destroy();
@@ -147,8 +167,8 @@ function exibirResultados(data) {
         type: 'bar',
         data: {
             labels: ['0','1','2','3','4','5','6+'],
-            datasets: [{ label: 'Cartas', data: data.curve, backgroundColor: '#818cf8', borderRadius: 8 }]
+            datasets: [{ label: 'Cartas', data: stats.curve, backgroundColor: '#818cf8', borderRadius: 6 }]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } }, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
