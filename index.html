@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor - Avaliador de Decks</title>
+    <title>Magic Doctor - Commander Analytics</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,66 +11,77 @@
 
     <div class="main-container">
         <header>
+            <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
             <p class="subtitle">Análise Profissional de Commander</p>
         </header>
 
         <section class="deck-input-section">
-            <textarea id="decklist" placeholder="Cole sua lista aqui...&#10;Exemplo:&#10;1 Sol Ring&#10;1 Command Tower&#10;1 Arcane Signet"></textarea>
-            <div class="counter-container">
-                Cartas detectadas: <span id="card-count">0</span>/100
+            <textarea id="decklist" 
+                placeholder="Cole sua lista aqui...&#10;&#10;Exemplo:&#10;1 Sol Ring&#10;1 Command Tower&#10;1 Arcane Signet"></textarea>
+            
+            <div class="input-footer">
+                <span class="instruction">Formato: [Quantidade] [Nome da Carta]</span>
+                <div class="counter-badge">
+                    Cartas: <span id="card-count">0</span>/100
+                </div>
             </div>
         </section>
 
         <div class="button-group">
-            <button id="btn-analisar" class="btn-blue" onclick="analisarDeck()">Analisar Deck</button>
-            <button id="btn-limpar" class="btn-gray" onclick="limpar()">Limpar Tudo</button>
+            <button id="btn-analisar" class="btn-primary" onclick="analisarDeck()">Analisar Deck</button>
+            <button id="btn-limpar" class="btn-secondary" onclick="limparTudo()">Limpar Lista</button>
         </div>
 
-        <div id="alerts-container"></div>
-
-        <div id="loading" class="hidden">⚕️ O Doutor está analisando seu deck no Scryfall... aguarde.</div>
+        <div id="status-area"></div>
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>O Doutor está examinando seu deck...</p>
+        </div>
 
         <div id="resultados" class="hidden">
-            <div class="result-block">
-                <h2>Informações Gerais sobre seu deck</h2>
+            <div class="glass-card">
+                <h2>📊 Informações Gerais</h2>
                 <div class="stats-grid">
-                    <p><strong>Comandante:</strong> <span id="res-commander">-</span></p>
-                    <p><strong>Identidade de Cor:</strong> <span id="res-color">-</span></p>
-                    <p><strong>Arquétipo Sugerido:</strong> <span id="res-arquetipo">-</span></p>
-                    <div id="res-tipos"></div>
+                    <div class="stat-item"><strong>Comandante:</strong> <span id="res-commander">-</span></div>
+                    <div class="stat-item"><strong>Identidade:</strong> <span id="res-color">-</span></div>
+                    <div class="stat-item"><strong>Arquétipo:</strong> <span id="res-arquetipo">-</span></div>
                 </div>
             </div>
 
-            <div class="result-block">
-                <h2>Estatísticas do seu deck</h2>
-                <div class="chart-container">
+            <div class="glass-card">
+                <h2>📈 Curva de Mana</h2>
+                <div class="chart-wrapper">
                     <canvas id="manaChart"></canvas>
                 </div>
-                <p style="text-align:center; margin-top:10px;">Curva de Mana (CMC Médio): <strong id="res-cmc">-</strong></p>
-                
-                <div class="analysis-list">
-                    <p><strong>🚀 Ramp (Aceleração):</strong> <span id="stat-ramp">-</span></p>
-                    <p><strong>🃏 Draw (Compra):</strong> <span id="stat-draw">-</span></p>
-                    <p><strong>⚔️ Interação (Remoções):</strong> <span id="stat-remocao">-</span></p>
-                    <div class="power-badge">9️⃣ Power Level Estimado: <span id="stat-power">-</span></div>
+                <p class="cmc-label">CMC Médio: <span id="res-cmc">-</span></p>
+            </div>
+
+            <div class="glass-card">
+                <h2>⚡ Performance</h2>
+                <div class="perf-list">
+                    <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
+                    <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
+                    <div class="perf-item"><span>⚔️ Interação:</span> <span id="stat-remocao">-</span></div>
+                </div>
+                <div class="power-level-box">
+                    <span>Power Level Estimado</span>
+                    <div id="stat-power" class="power-value">-</div>
                 </div>
             </div>
         </div>
 
         <footer>
-            <div class="footer-content">
-                <h3>Como o Magic Doctor avalia seu deck?</h3>
-                <p>
-                    Nossa análise é baseada em métricas de eficiência consagradas pela comunidade de Commander, 
-                    utilizando dados em tempo real da API do <strong>Scryfall</strong>.
-                </p>
-                
-                <div class="footer-grid">
-                    <div>
-                        <h4>🚀 Aceleração e Recursos</h4>
-                        <p>Identificamos "Fast Mana", pedras de mana e terrenos que aceleram seu jogo. Decks com alta densidade de ramp recebem pontuações de poder mais elevadas.</p>
-                    </div>
-                    <div>
-                        <h4>🃏 Consistência</h4>
-                        <p>Analisamos a quantidade de motores de compra (Draw) e a curva de mana (CMC). Um deck balanceado deve ser capaz de agir em todos os está
+            <h3>Critérios de Avaliação</h3>
+            <div class="footer-grid">
+                <p><strong>Aceleração:</strong> Analisamos fontes de mana extra.</p>
+                <p><strong>Consistência:</strong> Medimos motores de compra e curva.</p>
+                <p><strong>Interação:</strong> Contamos respostas e remoções.</p>
+            </div>
+            <p class="disclaimer">Magic Doctor v2.0 - Baseado em dados oficiais Scryfall.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
