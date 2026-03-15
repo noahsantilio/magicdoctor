@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
     <div class="main-container">
         <header>
             <div class="logo-area">⚕️</div>
@@ -18,19 +17,16 @@
 
         <section class="deck-input-section">
             <textarea id="decklist" 
-                placeholder="Cole sua lista aqui...&#10;&#10;Exemplo:&#10;1 Sol Ring&#10;1 Command Tower&#10;1 Arcane Signet"></textarea>
-            
+                placeholder="Cole sua lista aqui...&#10;&#10;Exemplo:&#10;1 Sol Ring&#10;1 Command Tower"></textarea>
             <div class="input-footer">
-                <span class="instruction">Formato: [Quantidade] [Nome da Carta]</span>
-                <div class="counter-badge">
-                    Cartas: <span id="card-count">0</span>/100
-                </div>
+                <span class="instruction">Dica: O Doutor aceita listas com códigos de coleção.</span>
+                <div class="counter-badge">Cartas: <span id="card-count">0</span></div>
             </div>
         </section>
 
         <div class="button-group">
-            <button id="btn-analisar" class="btn-primary" onclick="analisarDeck()">Analisar Deck</button>
-            <button id="btn-limpar" class="btn-secondary" onclick="limparTudo()">Limpar Lista</button>
+            <button class="btn-primary" onclick="analisarDeck()">Analisar Deck</button>
+            <button class="btn-secondary" onclick="limparTudo()">Limpar Lista</button>
         </div>
 
         <div id="status-area"></div>
@@ -43,14 +39,14 @@
             <div class="glass-card">
                 <h2>📊 Informações Gerais</h2>
                 <div class="stats-grid">
-                    <div class="stat-item"><strong>Comandante:</strong> <span id="res-commander">-</span></div>
-                    <div class="stat-item"><strong>Identidade:</strong> <span id="res-color">-</span></div>
-                    <div class="stat-item"><strong>Arquétipo:</strong> <span id="res-arquetipo">-</span></div>
+                    <div class="stat-item"><strong>Comandante:</strong> <br><span id="res-commander">-</span></div>
+                    <div class="stat-item"><strong>Identidade:</strong> <br><span id="res-color">-</span></div>
+                    <div class="stat-item"><strong>Arquétipo:</strong> <br><span id="res-arquetipo">-</span></div>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h2>📈 Curva de Mana</h2>
+                <h2>📈 Curva de Mana (Não-Terrenos)</h2>
                 <div class="chart-wrapper">
                     <canvas id="manaChart"></canvas>
                 </div>
@@ -58,7 +54,7 @@
             </div>
 
             <div class="glass-card">
-                <h2>⚡ Performance</h2>
+                <h2>⚡ Performance e Poder</h2>
                 <div class="perf-list">
                     <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
                     <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
@@ -78,10 +74,9 @@
                 <p><strong>Consistência:</strong> Medimos motores de compra e curva.</p>
                 <p><strong>Interação:</strong> Contamos respostas e remoções.</p>
             </div>
-            <p class="disclaimer">Magic Doctor v2.0 - Baseado em dados oficiais Scryfall.</p>
+            <p class="disclaimer">Magic Doctor - Desenvolvido para a comunidade de Commander.</p>
         </footer>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
