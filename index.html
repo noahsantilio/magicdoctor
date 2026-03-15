@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor v8.5 - Strategic Gold</title>
+    <title>Magic Doctor v8.6 - Platinum Edition</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
 <body>
 
@@ -13,40 +13,39 @@
         <header>
             <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
-            <p class="subtitle">Análise Tática e Heurística <span class="v-tag">v8.5 Gold</span></p>
+            <p class="subtitle">Análise Tática e Heurística <span class="v-tag">v8.6 Platinum</span></p>
         </header>
 
         <section class="deck-input-section">
             <textarea id="decklist" placeholder="Cole sua lista aqui...&#10;Ex: 1 Heliod, Sun-Crowned&#10;1 Walking Ballista"></textarea>
             <div class="input-footer">
-                <span class="instruction">O Doutor analisará combos, arquétipos e riscos estratégicos.</span>
-                <div class="counter-badge">Total de Cartas: <span id="card-count">0</span></div>
+                <span class="instruction">O Doutor identifica Vetores de Vitória e Peças de Alto Impacto.</span>
+                <div class="counter-badge">Cartas Detectadas: <span id="card-count">0</span></div>
             </div>
         </section>
 
         <div class="button-group">
-            <button class="btn-primary" onclick="analisarDeck()">Analisar Estratégia</button>
+            <button class="btn-primary" onclick="analisarDeck()">Realizar Diagnóstico Tático</button>
             <button class="btn-secondary" onclick="limparTudo()">Limpar Deck</button>
         </div>
 
         <div id="status-area"></div>
         <div id="loading" class="hidden">
             <div class="spinner"></div>
-            <p id="loading-text">O Doutor está examinando o DNA do seu deck...</p>
+            <p id="loading-text">O Doutor está mapeando os vetores de vitória do seu deck...</p>
         </div>
 
-        <div id="resultados" class="hidden">
+        <main id="resultados" class="hidden">
             
-            <div class="glass-card highlight">
+            <section class="glass-card highlight">
                 <h2>🧬 Identidade e Estratégia</h2>
                 <div class="archetype-container">
                     <div class="arch-box">
                         <small>Arquétipo</small>
                         <div id="res-arquetipo" class="arch-value">-</div>
                         <p id="res-arquetipo-desc" class="arch-desc"></p>
-                        
                         <div class="complexity-box">
-                            <small>Nível de Complexidade</small>
+                            <small>Complexidade de Pilotagem</small>
                             <div id="res-complexity" class="complexity-badge">-</div>
                         </div>
                     </div>
@@ -66,37 +65,56 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="glass-card highlight">
-                <h2>🎯 Relatório Tático</h2>
-                <div class="tactical-grid">
+            <section class="glass-card highlight">
+                <h2>🎯 Relatório Tático e Vetores de Vitória</h2>
+                <div class="tactical-grid-v2">
+                    
                     <div class="tactical-box">
-                        <h3>Condições de Vitória</h3>
-                        <ul id="res-wincons"></ul>
+                        <h3>Vetores de Vitória</h3>
+                        <p class="box-subtitle">Caminhos identificados para vencer.</p>
+                        <div id="res-win-vectors" class="vector-container">
+                            </div>
+                        <ul id="res-wincons-list" class="tactical-list">
+                            </ul>
                     </div>
+
                     <div class="tactical-box">
-                        <h3>Combos Detectados</h3>
-                        <ul id="res-combos"></ul>
+                        <h3>Cartas de Alto Impacto</h3>
+                        <p class="box-subtitle">Devem ser respondidas imediatamente.</p>
+                        <ul id="res-high-impact" class="tactical-list"></ul>
                     </div>
+
+                    <div class="tactical-box">
+                        <h3>Velocidade e Combos</h3>
+                        <div class="tempo-container">
+                            <small>Velocidade do Deck:</small>
+                            <div id="res-tempo-tag" class="tempo-tag">-</div>
+                        </div>
+                        <div class="combo-section">
+                            <h4 style="font-size: 0.75rem; margin-top:15px; color:var(--accent); text-transform: uppercase;">Combos Detectados:</h4>
+                            <ul id="res-combos-list" class="tactical-list"></ul>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
+            </section>
 
-            <div class="glass-card">
+            <section class="glass-card">
                 <h2>🔍 Sinergias e Mecânicas Detectadas</h2>
-                <div id="res-tags" class="tag-cloud">
-                    </div>
-            </div>
+                <div id="res-tags" class="tag-cloud"></div>
+            </section>
 
             <div class="grid-layout">
-                <div class="glass-card">
+                <section class="glass-card">
                     <h2>📈 Curva de Mana</h2>
                     <div class="chart-wrapper">
                         <canvas id="manaChart"></canvas>
                     </div>
                     <p class="cmc-label">CMC Médio: <span id="res-cmc">-</span></p>
-                </div>
-                <div class="glass-card">
+                </section>
+                <section class="glass-card">
                     <h2>⚡ Estatísticas</h2>
                     <div class="perf-list">
                         <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
@@ -108,18 +126,18 @@
                         <span>Power Level Estimado</span>
                         <div id="stat-power" class="power-value">-</div>
                     </div>
-                </div>
+                </section>
             </div>
 
-            <div class="glass-card">
+            <section class="glass-card">
                 <h2>📋 Inventário por Tipo</h2>
-                <div id="tipo-columns-container" class="type-grid">
-                    </div>
-            </div>
-        </div>
+                <div id="tipo-columns-container" class="type-grid"></div>
+            </section>
+
+        </main>
 
         <footer>
-            <p class="disclaimer">Magic Doctor v8.5 | Criado para a comunidade de Commander | Dados via Scryfall API</p>
+            <p class="disclaimer">Magic Doctor v8.6 Platinum | Criado para a comunidade de Commander | Scryfall API</p>
         </footer>
     </div>
 
