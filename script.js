@@ -233,3 +233,51 @@ document.getElementById('decklist').addEventListener('input', function() {
     });
     document.getElementById('card-count').innerText = total;
 });
+
+// 7. Definição do Dicionário de Heurísticas
+const HEURISTICAS = [
+    { tag: "Card Draw Engine", terms: ["whenever you draw", "draw a card for each"], type: "success" },
+    { tag: "Sacrifice Outlet", terms: ["sacrifice a", "sacrifice another"], type: "danger" },
+    { tag: "Graveyard Recursion", terms: ["return", "graveyard", "reanimate"], type: "warning" },
+    { tag: "Mana Doubler", terms: ["twice as much", "double the amount of mana"], type: "success" },
+    { tag: "Tutor", terms: ["search your library", "put it into your hand"], type: "warning" },
+    { tag: "Board Wipe", terms: ["destroy all", "exile all creatures", "each creature gets -x/-x"], type: "danger" },
+    { tag: "Counterspell", terms: ["counter target spell"], type: "warning" },
+    { tag: "Life Gain", terms: ["lifelink", "gain", "life"], type: "success" },
+    { tag: "Protection", terms: ["hexproof", "indestructible", "protection from"], type: "success" },
+    { tag: "ETB Sinergy", terms: ["enters the battlefield", "when"], type: "" }
+];
+
+// 2. No objeto 'stats' dentro de analisarDeck(), adicione:
+// stats.detectedTags = new Set();
+
+// 3. Dentro do loop de cartas (após pegar o data da API):
+/*
+    const oracle = (data.oracle_text || "").toLowerCase();
+    
+    HEURISTICAS.forEach(h => {
+        if (h.terms.some(term => oracle.includes(term))) {
+            stats.detectedTags.add(h.tag);
+        }
+    });
+*/
+
+// 4. Função para renderizar as tags (adicione ao final do renderizar):
+function renderizarTags(detectedTags) {
+    const container = document.getElementById('res-tags');
+    container.innerHTML = "";
+    
+    if (detectedTags.size === 0) {
+        container.innerHTML = "<span class='tag'>Nenhuma mecânica complexa detectada</span>";
+        return;
+    }
+
+    detectedTags.forEach(tagName => {
+        // Busca a configuração da tag para saber a cor
+        const config = HEURISTICAS.find(h => h.tag === tagName);
+        const span = document.createElement('span');
+        span.className = `tag ${config && config.type ? 'tag-' + config.type : ''}`;
+        span.innerText = tagName;
+        container.appendChild(span);
+    });
+}
