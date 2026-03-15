@@ -1,45 +1,19 @@
-/* Adicione isso ao final do seu style.css anterior */
+body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; }
+.main-container { width: 100%; max-width: 900px; background: #252525; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+header h1 { color: #3498db; margin: 0; font-size: 2.8rem; text-align: center; }
+.subtitle { text-align: center; color: #888; margin-bottom: 25px; }
 
-.result-block {
-    margin-top: 30px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    background-color: #fafafa;
-}
+textarea { width: 100%; height: 250px; background: #1a1a1a; border: 2px solid #333; border-radius: 12px; color: #fff; padding: 15px; font-family: 'Courier New', monospace; }
+.button-group { display: flex; gap: 10px; margin: 20px 0; justify-content: center; }
+button { padding: 12px 40px; border-radius: 50px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.btn-blue { background: #3498db; color: white; }
+.btn-gray { background: #444; color: #ccc; }
 
-.result-block h2 {
-    color: #2c3e50;
-    font-size: 1.4rem;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-    margin-top: 0;
-}
+.result-block { background: #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid #3498db; }
+.power-badge { background: linear-gradient(90deg, #2980b9, #6dd5fa); color: #fff; padding: 20px; border-radius: 12px; text-align: center; font-size: 1.5rem; margin-top: 20px; }
 
-.stats-grid p, .analysis-list p {
-    margin: 12px 0;
-    line-height: 1.5;
-}
+.alert { background: #e74c3c; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; animation: shake 0.5s; }
+.hidden { display: none; }
+#loading { text-align: center; padding: 20px; color: #3498db; font-weight: bold; }
 
-.power-badge {
-    background: #2c3e50;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-top: 20px;
-}
-
-.hidden {
-    display: none;
-}
-
-#res-tipos {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    font-size: 0.9rem;
-    color: #666;
-}
+@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
