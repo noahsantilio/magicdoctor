@@ -20,9 +20,7 @@ padding:40px;
 background:#f4f6f8;
 }
 
-h1{
-margin-bottom:3px;
-}
+h1{margin-bottom:4px;}
 
 .subtitle{
 font-size:14px;
@@ -76,15 +74,6 @@ canvas{
 margin-top:30px;
 }
 
-footer{
-
-margin-top:50px;
-padding-top:20px;
-border-top:1px solid #ccc;
-font-size:14px;
-
-}
-
 </style>
 
 </head>
@@ -92,16 +81,22 @@ font-size:14px;
 <body>
 
 <h1>Magic Doctor</h1>
+
 <div class="subtitle">
 Ferramenta de análise de decks de Commander
 </div>
 
-<textarea id="deckInput" placeholder="Cole a lista do deck aqui"></textarea>
+<textarea id="deckInput"></textarea>
 
 <div id="counter">Cartas detectadas: 0</div>
 
-<button class="analyze" onclick="analyzeDeck()">Analisar Deck</button>
-<button class="clear" onclick="clearDeck()">Limpar Análise</button>
+<button class="analyze" id="analyzeBtn">
+Analisar Deck
+</button>
+
+<button class="clear" id="clearBtn">
+Limpar Análise
+</button>
 
 <div id="result"></div>
 
@@ -113,18 +108,18 @@ Ferramenta de análise de decks de Commander
 
 <p>
 
-O site analisa decks de Commander avaliando múltiplas métricas usadas pela comunidade:
+O site analisa decks de Commander avaliando:
 
-• Identificação automática do Commander  
-• Identificação do arquétipo do deck  
-• Curva média de mana  
-• Quantidade de ramp  
-• Card draw  
-• Remoções e interação  
-• Condições de vitória  
-• Detecção de combos e combos infinitos  
+• identificação automática do Commander  
+• arquétipo do deck  
+• curva média de mana  
+• ramp  
+• card draw  
+• remoções e interação  
+• condições de vitória  
+• combos e combos infinitos  
 
-Com base nesses fatores é calculado um **Power Level estimado** do deck.
+Essas métricas são usadas para estimar o **Power Level do deck**.
 
 </p>
 
@@ -134,7 +129,6 @@ Com base nesses fatores é calculado um **Power Level estimado** do deck.
 <script src="data/infiniteCombos.js"></script>
 <script src="data/archetypes.js"></script>
 <script src="data/winconditions.js"></script>
-<script src="data/staples.js"></script>
 
 <script src="script.js"></script>
 
