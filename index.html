@@ -1,136 +1,46 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-
+<html lang="pt-br">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Magic Doctor</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-body{
-font-family:Arial;
-max-width:1100px;
-margin:auto;
-padding:40px;
-background:#f4f6f8;
-}
-
-h1{margin-bottom:4px;}
-
-.subtitle{
-font-size:14px;
-color:#666;
-margin-bottom:20px;
-}
-
-textarea{
-width:100%;
-height:260px;
-font-family:monospace;
-border-radius:10px;
-border:1px solid #ccc;
-padding:12px;
-}
-
-button{
-padding:12px 26px;
-border:none;
-border-radius:30px;
-font-weight:bold;
-cursor:pointer;
-margin-top:15px;
-margin-right:10px;
-}
-
-.analyze{
-background:#2563eb;
-color:white;
-}
-
-.clear{
-background:#9ca3af;
-color:white;
-}
-
-#counter{
-margin-top:10px;
-font-weight:bold;
-}
-
-#result{
-margin-top:25px;
-background:white;
-padding:25px;
-border-radius:12px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
-}
-
-canvas{
-margin-top:30px;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Doctor - Avaliador de Decks</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1>Magic Doctor</h1>
+    <div class="main-container">
+        <header>
+            <h1>Magic Doctor</h1>
+            <p class="subtitle">Ferramenta de análise de decks de Commander</p>
+        </header>
 
-<div class="subtitle">
-Ferramenta de análise de decks de Commander
-</div>
+        <section class="deck-input-section">
+            <textarea id="decklist" 
+                placeholder="Cole sua lista aqui...&#10;Exemplo:&#10;1 Sol Ring&#10;1 Command Tower&#10;1 Arcane Signet"></textarea>
+            
+            <div class="counter-container">
+                Cartas detectadas: <span id="card-count">0</span>
+            </div>
+        </section>
 
-<textarea id="deckInput"></textarea>
+        <div class="button-group">
+            <button id="btn-analisar" class="btn-blue">Analisar Deck</button>
+            <button id="btn-limpar" class="btn-gray">Limpar Análise</button>
+        </div>
 
-<div id="counter">Cartas detectadas: 0</div>
+        <div id="resultado-container" class="hidden">
+            </div>
 
-<button class="analyze" id="analyzeBtn">
-Analisar Deck
-</button>
+        <footer>
+            <div class="footer-content">
+                <h3>Sobre a Avaliação</h3>
+                <p id="info-text">
+                    [Espaço reservado para a explicação dos critérios de avaliação]
+                </p>
+            </div>
+        </footer>
+    </div>
 
-<button class="clear" id="clearBtn">
-Limpar Análise
-</button>
-
-<div id="result"></div>
-
-<canvas id="chart"></canvas>
-
-<footer>
-
-<h3>Como o Magic Doctor avalia seu deck</h3>
-
-<p>
-
-O site analisa decks de Commander avaliando:
-
-• identificação automática do Commander  
-• arquétipo do deck  
-• curva média de mana  
-• ramp  
-• card draw  
-• remoções e interação  
-• condições de vitória  
-• combos e combos infinitos  
-
-Essas métricas são usadas para estimar o **Power Level do deck**.
-
-</p>
-
-</footer>
-
-<script src="data/combos.js"></script>
-<script src="data/infiniteCombos.js"></script>
-<script src="data/archetypes.js"></script>
-<script src="data/winconditions.js"></script>
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
