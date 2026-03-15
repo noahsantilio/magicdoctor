@@ -1,5 +1,5 @@
 /* ============================================================
-   MAGIC DOCTOR v8.7 PLATINUM - BLOCO 1: BASE E ESTRUTURA
+   MAGIC DOCTOR v8.8 PLATINUM - BLOCO 1: UI MODERNA E CORES
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -16,136 +16,177 @@
     --error: #ef4444;
     --success: #10b981;
     --warning: #f59e0b;
+    --neon-purple: #a855f7;
 }
 
-/* Reset e Estrutura Global */
+/* Reset e Estrutura */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body { 
     background-color: var(--bg); 
     background-image: radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.15) 0%, transparent 35%);
-    color: var(--text); 
-    font-family: 'Plus Jakarta Sans', sans-serif; 
-    padding: 20px; 
-    min-height: 100vh;
+    color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; min-height: 100vh;
 }
-
 .main-container { width: 100%; max-width: 1000px; margin: 0 auto; animation: fadeIn 0.6s ease-out; }
 
-/* Header e Input */
+/* Header */
 header { text-align: center; margin-bottom: 40px; }
 h1 { font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.v-tag { font-size: 0.8rem; background: var(--primary); padding: 4px 12px; border-radius: 20px; color: white; font-weight: 600; }
+
+/* CONTAINER DO DECKLIST COM CONTADOR MODERNO */
+.textarea-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
 
 textarea { 
     width: 100%; height: 260px; background: var(--card); border: 1px solid var(--border); 
-    border-radius: 24px; color: white; padding: 25px; font-family: 'Consolas', monospace; resize: none; outline: none; transition: 0.3s;
+    border-radius: 24px; color: white; padding: 25px; font-family: 'Consolas', monospace; 
+    resize: none; outline: none; transition: 0.3s;
 }
-textarea:focus { border-color: var(--primary); box-shadow: 0 0 20px rgba(79, 70, 229, 0.2); }
 
-/* Botões */
-.button-group { display: flex; gap: 15px; margin: 30px 0; }
-button { flex: 1; padding: 18px; border-radius: 16px; border: none; cursor: pointer; font-weight: 700; transition: 0.3s; color: white; }
-.btn-primary { background: var(--primary); box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.4); }
-.btn-secondary { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); }
+textarea:focus { border-color: var(--neon-purple); box-shadow: 0 0 20px rgba(168, 85, 247, 0.15); }
+
+/* O Contador Roxo Moderno solicitado */
+.modern-counter {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--neon-purple);
+    padding: 8px 15px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: none; /* Não atrapalha o clique no textarea */
+}
+
+.counter-label { font-size: 0.55rem; font-weight: 800; color: var(--neon-purple); letter-spacing: 1px; }
+#card-count { font-size: 1.2rem; font-weight: 800; color: white; }
+
+/* Botões com Efeito de Pulsação Sugerido */
+.btn-primary { 
+    background: var(--primary); 
+    box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+.btn-primary:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -5px rgba(79, 70, 229, 0.6);
+}
+
+/* DESTAQUE DE COMPLEXIDADE (CORES SEMÂNTICAS) */
+.complexity-badge { 
+    display: inline-block; padding: 6px 14px; border-radius: 8px; 
+    font-weight: 800; font-size: 0.75rem; margin-top: 10px; color: white; 
+    text-transform: uppercase; transition: 0.3s;
+}
+.diff-baixa { background: var(--success); box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+.diff-media { background: var(--warning); box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+.diff-alta { background: var(--error); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+.diff-extrema { 
+    background: linear-gradient(45deg, #7c3aed, #db2777); 
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { opacity: 0.9; }
+    50% { opacity: 1; box-shadow: 0 0 20px rgba(124, 58, 237, 0.8); }
+    100% { opacity: 0.9; }
+}
+/* ============================================================
+   MAGIC DOCTOR v8.8 PLATINUM - BLOCO 2: TÁTICA E INVENTÁRIO
+   ============================================================ */
 
 /* Cartões de Vidro */
 .glass-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 28px; backdrop-filter: blur(10px); margin-bottom: 25px; }
 .highlight { border: 1px solid rgba(129, 140, 248, 0.3); }
 h2 { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
 
-/* BLOCO 1: Identidade Estratégica */
-.archetype-container { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 20px; }
-.arch-value { font-size: 1.8rem; font-weight: 800; color: var(--accent); line-height: 1.2; }
-.arch-desc { font-size: 0.85rem; color: var(--text-dim); margin-top: 8px; line-height: 1.4; }
-.risk-box { border-left: 4px solid var(--error); background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 15px; height: 100%; }
-.risk-value { font-size: 0.85rem; color: #fca5a5; line-height: 1.5; }
-.complexity-badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; margin-top: 8px; color: white; text-transform: uppercase; }
-.color-name-highlight { font-size: 1.5rem; font-weight: 800; color: #818cf8; text-transform: uppercase; }
-.commander-name { font-size: 1rem; color: var(--text); font-weight: 700; margin-top: 5px; }
-/* ============================================================
-   MAGIC DOCTOR v8.7 PLATINUM - BLOCO 2: TÁTICA E INVENTÁRIO
-   ============================================================ */
-
-/* Relatório Tático e Vetores */
+/* Relatório Tático e Espaçamentos Corrigidos */
 .tactical-grid-v2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 .tactical-box { background: rgba(15, 23, 42, 0.3); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
 .tactical-box h3 { font-size: 0.8rem; color: var(--accent); margin-bottom: 5px; text-transform: uppercase; }
-.box-subtitle { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 15px; display: block; }
 
-.vector-badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: rgba(192, 132, 252, 0.1); color: var(--accent); border: 1px solid var(--accent); font-weight: bold; margin-right: 5px; }
+/* Ajuste de espaçamento solicitado nos Vetores */
+.vector-container-spacer { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 8px; 
+    margin-bottom: 18px; /* Espaço entre os badges e a lista */
+}
+.list-spacer { 
+    margin-top: 15px; 
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 10px;
+}
+
+.vector-badge { 
+    font-size: 0.65rem; padding: 4px 10px; border-radius: 6px; 
+    background: rgba(192, 132, 252, 0.1); color: var(--accent); 
+    border: 1px solid rgba(192, 132, 252, 0.3); font-weight: bold; 
+}
 
 .tactical-list { list-style: none; font-size: 0.8rem; color: var(--text-dim); }
-.tactical-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
-.icon-finisher { color: var(--error); font-weight: bold; }
-.icon-enabler { color: var(--success); font-weight: bold; }
+.tactical-list li { 
+    margin-bottom: 10px; display: flex; align-items: center; gap: 10px; 
+    border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px; 
+}
 
-/* Velocidade e Tags */
+/* Combos e Velocidade */
+.combo-title { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; }
 .tempo-tag { font-size: 1.3rem; font-weight: 800; text-transform: uppercase; margin-top: 5px; }
 .tempo-early { color: #f87171; }
 .tempo-mid { color: #fbbf24; }
 .tempo-late { color: #60a5fa; }
 
-.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-.tag { background: rgba(129, 140, 248, 0.1); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
-
-/* INVENTÁRIO POR TIPO (CORREÇÕES v8.7) */
+/* INVENTÁRIO (FIXO E COMPACTO v8.8) */
 .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
 .type-column { 
-    background: rgba(15, 23, 42, 0.5); 
-    padding: 15px; 
-    border-radius: 18px; 
-    border: 1px solid var(--border); 
-    max-height: 350px; 
-    overflow-y: auto; 
-    position: relative;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    background: rgba(15, 23, 42, 0.5); padding: 15px; border-radius: 18px; 
+    border: 1px solid var(--border); max-height: 350px; overflow-y: auto; 
+    position: relative; scrollbar-width: thin;
 }
 
-/* Título Fixado no Topo (Sticky) */
 .type-column h3 { 
-    font-size: 0.7rem; 
-    color: var(--accent); 
-    background: #162031; /* Fundo sólido para cobrir itens na rolagem */
-    margin: -15px -15px 10px -15px;
-    padding: 12px 15px;
-    position: sticky;
-    top: -15px;
-    z-index: 10;
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
+    font-size: 0.7rem; color: var(--accent); background: #162031; 
+    margin: -15px -15px 10px -15px; padding: 12px 15px;
+    position: sticky; top: -15px; z-index: 10;
+    border-bottom: 1px solid var(--border); text-transform: uppercase;
 }
 
-/* Fonte das Cartas Reduzida (2 pontos a menos conforme pedido) */
 .type-column li { 
-    font-size: 0.65rem; 
-    color: var(--text-dim); 
-    list-style: none; 
-    padding: 4px 0; 
+    font-size: 0.65rem; /* Fonte reduzida em 2 pontos */
+    color: var(--text-dim); list-style: none; padding: 5px 0; 
     border-bottom: 1px solid rgba(255,255,255,0.02);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    transition: 0.2s; cursor: default;
+}
+
+/* Efeito Hover nas cartas sugerido */
+.type-column li:hover { 
+    color: var(--accent); 
+    padding-left: 5px; 
+    background: rgba(192, 132, 252, 0.05);
 }
 
 /* Gráficos e Power Level */
 .grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
-.chart-wrapper { height: 200px; position: relative; }
-.cmc-label { text-align: center; font-weight: 800; color: #818cf8; font-size: 1rem; margin-top: 10px; }
-.perf-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-.power-level-box { background: rgba(79, 70, 229, 0.1); padding: 20px; border-radius: 20px; text-align: center; margin-top: 15px; border: 1px solid rgba(79, 70, 229, 0.2); }
+.chart-wrapper { height: 200px; }
 .power-value { font-size: 3rem; font-weight: 800; color: #818cf8; }
 
-/* Status e Mobile */
+/* Animações e Mobile */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 .hidden { display: none; }
 
 @media (max-width: 850px) {
     .tactical-grid-v2, .archetype-container, .grid-layout { grid-template-columns: 1fr; }
-    h1 { font-size: 2.2rem; }
 }
 
-footer { text-align: center; margin-top: 40px; color: var(--text-dim); font-size: 0.75rem; padding-bottom: 20px; }
+footer { text-align: center; margin-top: 40px; color: var(--text-dim); font-size: 0.75rem; padding-bottom: 30px; }
