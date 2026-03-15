@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor v4.0 - Deck Archetype Specialist</title>
+    <title>Magic Doctor v6.0 - Professional Commander Analytics</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,51 +13,53 @@
         <header>
             <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
-            <p class="subtitle">Análise de Arquétipo e Performance <span class="v-tag">v4.0</span></p>
+            <p class="subtitle">Análise Especializada de Decks <span class="v-tag">v6.0</span></p>
         </header>
 
         <section class="deck-input-section">
             <textarea id="decklist" 
-                placeholder="Cole sua lista aqui...&#10;Exemplo: 1 Toph, Earthbending Master (TLE) 145"></textarea>
+                placeholder="Cole sua lista aqui...&#10;Exemplo: 1 Farseek (PLST) C17-149&#10;1 Cultivate C18-138"></textarea>
             
             <div class="input-footer">
-                <span class="instruction">Análise heurística de estratégia ativada.</span>
+                <span class="instruction">Limpeza de códigos de coleção ativada.</span>
                 <div class="counter-badge">
-                    Cartas: <span id="card-count">0</span>
+                    Cartas na Lista: <span id="card-count">0</span>
                 </div>
             </div>
         </section>
 
         <div class="button-group">
             <button id="btn-analisar" class="btn-primary" onclick="analisarDeck()">Analisar Deck</button>
-            <button id="btn-limpar" class="btn-secondary" onclick="limparTudo()">Limpar Lista</button>
+            <button id="btn-limpar" class="btn-secondary" onclick="limparTudo()">Limpar Tudo</button>
         </div>
 
         <div id="status-area"></div>
         
         <div id="loading" class="hidden">
             <div class="spinner"></div>
-            <p id="loading-text">O Doutor está identificando a estratégia...</p>
+            <p id="loading-text">O Doutor está examinando as cartas...</p>
         </div>
 
         <div id="resultados" class="hidden">
+            
             <div class="glass-card highlight">
                 <h2>🧬 Identidade do Deck</h2>
                 <div class="archetype-container">
                     <div class="arch-box">
                         <small>Arquétipo Principal</small>
-                        <div id="res-arquetipo" class="arch-value">Analisando...</div>
+                        <div id="res-arquetipo" class="arch-value">-</div>
+                        <p id="res-arquetipo-desc" class="arch-desc"></p>
                     </div>
                     <div class="arch-box">
-                        <small>Cores do Comandante</small>
-                        <div id="res-color" class="color-symbols">-</div>
+                        <small>Cores da Identidade</small>
+                        <div id="res-color" class="color-text">-</div>
                     </div>
                 </div>
             </div>
 
             <div class="grid-layout">
                 <div class="glass-card">
-                    <h2>📊 Curva de Mana</h2>
+                    <h2>📈 Curva de Mana</h2>
                     <div class="chart-wrapper">
                         <canvas id="manaChart"></canvas>
                     </div>
@@ -65,11 +67,11 @@
                 </div>
 
                 <div class="glass-card">
-                    <h2>⚡ Estatísticas</h2>
+                    <h2>⚡ Estatísticas de Performance</h2>
                     <div class="perf-list">
-                        <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
-                        <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
-                        <div class="perf-item"><span>⚔️ Interação:</span> <span id="stat-remocao">-</span></div>
+                        <div class="perf-item"><span>🚀 Ramp (Aceleração):</span> <span id="stat-ramp">-</span></div>
+                        <div class="perf-item"><span>🃏 Draw (Compra):</span> <span id="stat-draw">-</span></div>
+                        <div class="perf-item"><span>⚔️ Interação (Remoção):</span> <span id="stat-remocao">-</span></div>
                         <div class="perf-item"><span>🛡️ Proteção:</span> <span id="stat-protecao">-</span></div>
                     </div>
                     <div class="power-level-box">
@@ -80,13 +82,19 @@
             </div>
 
             <div class="glass-card">
-                <h2>👨‍✈️ Comandante</h2>
-                <p id="res-commander" style="font-size: 1.2rem; font-weight: bold; color: #818cf8;">-</p>
+                <h2>📋 Distribuição de Cartas por Tipo</h2>
+                <div id="tipo-columns-container" class="type-grid">
+                    </div>
+            </div>
+
+            <div class="glass-card">
+                <h2>👨‍✈️ Comandante Identificado</h2>
+                <p id="res-commander" style="font-size: 1.3rem; font-weight: bold; color: #818cf8; margin: 0;">-</p>
             </div>
         </div>
 
         <footer>
-            <p class="disclaimer">Magic Doctor v4.0 | Archetype Detection System | Scryfall API</p>
+            <p class="disclaimer">Magic Doctor v6.0 | Desenvolvido para análise avançada de EDH</p>
         </footer>
     </div>
 
