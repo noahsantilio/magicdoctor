@@ -1,38 +1,31 @@
 /**
- * MAGIC DOCTOR v8.8 PLATINUM - PARTE 1
- * Inteligência de Identidade e Configurações de UI
+ * MAGIC DOCTOR v8.8.1 PLATINUM
+ * BLOCO 1: CONFIGURAÇÕES, MONITOR DE UI E MOTOR DE BUSCA
  */
 
 let myChart = null;
 
+// Banco de dados para detecção de sinergias e combos
 const COMBO_DATABASE = [
     { name: "Heliod + Ballista", cards: ["Heliod, Sun-Crowned", "Walking Ballista"], desc: "Dano Infinito" },
     { name: "Thassa + Oracle", cards: ["Thassa's Oracle", "Demonic Consultation", "Tainted Pact"], desc: "Vitória Instantânea" },
     { name: "Exquisite + Sanguine", cards: ["Exquisite Blood", "Sanguine Bond"], desc: "Dreno Infinito" },
-    { name: "Kiki + Jiki Combo", cards: ["Kiki-Jiki, Mirror Breaker", "Pestermite", "Deceiver Exarch", "Village Bell-Ringer"], desc: "Criaturas Infinitas" },
+    { name: "Kiki-Jiki Combo", cards: ["Kiki-Jiki", "Pestermite", "Deceiver Exarch", "Village Bell-Ringer"], desc: "Criaturas Infinitas" },
     { name: "Dramatic Scepter", cards: ["Isochron Scepter", "Dramatic Reversal"], desc: "Mana Infinita" }
 ];
 
 const ARQUETIPOS = {
     "VOLTRON": { desc: "Foca em fortalecer uma única criatura para vitória via dano de precisão.", risco: "Remoções pontuais e efeitos de sacrifício.", complexity: "Baixa" },
-    "ARISTOCRATS": { desc: "Ganha valor sacrificando suas criaturas e drenando os oponentes.", risco: "Exílio de cemitério e efeitos de 'Hushbringer'.", complexity: "Média" },
-    "STAX": { desc: "Controla o jogo impedindo que os oponentes usem recursos.", risco: "Decks Aggro rápidos e remoções de artefatos.", complexity: "Alta" },
+    "ARISTOCRATS": { desc: "Ganha valor sacrificando suas criaturas e drenando os oponentes.", risco: "Exílio de cemitério e efeitos de silêncio.", complexity: "Média" },
+    "STAX": { desc: "Controla o jogo impedindo que os oponentes usem recursos básicos.", risco: "Decks rápidos e remoções de artefatos.", complexity: "Alta" },
     "COMBO": { desc: "Busca peças específicas para encerrar o jogo instantaneamente.", risco: "Counterspells e descarte de mão.", complexity: "Extrema" },
-    "CONTROL": { desc: "Gerencia ameaças até dominar a mesa com recursos superiores.", risco: "Decks rápidos (Go-Wide) e proteção insuficiente.", complexity: "Alta" }
+    "MIDRANGE": { desc: "Equilíbrio entre recursos e ameaças de custo médio.", risco: "Decks extremamente focados ou muito rápidos.", complexity: "Média" }
 };
 
 const NOMES_CORES = {
     "Branco, Azul": "Azorius", "Azul, Preto": "Dimir", "Preto, Vermelho": "Rakdos", "Vermelho, Verde": "Gruul", "Verde, Branco": "Selesnya",
     "Branco, Preto": "Orzhov", "Preto, Verde": "Golgari", "Verde, Azul": "Simic", "Azul, Vermelho": "Izzet", "Vermelho, Branco": "Boros",
     "Branco, Azul, Preto": "Esper", "Azul, Preto, Vermelho": "Grixis", "Preto, Vermelho, Verde": "Jund", "Vermelho, Verde, Branco": "Naya", "Verde, Branco, Azul": "Bant"
-};
-
-// Mapeamento de Cores para a Complexidade (Corrigindo o destaque visual)
-const COMPLEXITY_STYLES = {
-    "Baixa": "diff-baixa",
-    "Média": "diff-media",
-    "Alta": "diff-alta",
-    "Extrema": "diff-extrema"
 };
 
 const VETORES_GATILHOS = [
@@ -42,19 +35,7 @@ const VETORES_GATILHOS = [
     { id: "COMBO", label: "Combo/Alt", terms: ["win the game", "infinite", "tutor"] }
 ];
 
-function limparNome(linha) {
-    if (!linha) return "";
-    let n = linha.trim().replace(/^(\d+\s*[xX]?\s+)/, "");
-    if (n.includes("//")) n = n.split("//")[0];
-    return n.trim();
-}
-
-/**
- * MAGIC DOCTOR v8.8 PLATINUM - PARTE 2
- * Motor de Diagnóstico e Contador Moderno
- */
-
-// Monitor do Contador de Cartas (Badge Roxo Moderno)
+// 1. MONITOR DO CONTADOR DE CARTAS (Badge Externo)
 document.getElementById('decklist').addEventListener('input', function() {
     const linhas = this.value.split('\n').filter(l => l.trim() !== "");
     let total = 0;
@@ -62,20 +43,27 @@ document.getElementById('decklist').addEventListener('input', function() {
         const match = l.match(/^(\d+)/);
         total += match ? parseInt(match[1]) : 1;
     });
-    // Atualiza o contador dentro do badge roxo
     document.getElementById('card-count').innerText = total;
 });
 
+// 2. LIMPEZA DE STRING (Tratamento de Input)
+function limparNome(linha) {
+    if (!linha) return "";
+    // Remove quantidades (1x), números de set (#123) e split cards ( // )
+    let n = linha.trim().replace(/^(\d+\s*[xX]?\s+)/, "");
+    n = n.replace(/\(.*\)/, ""); // Remove (Set Code)
+    if (n.includes("//")) n = n.split("//")[0];
+    return n.trim();
+}
+
+// 3. MOTOR DE ANALISE (Chamada de API)
 async function analisarDeck() {
     const loading = document.getElementById('loading');
     const resultados = document.getElementById('resultados');
     const deckText = document.getElementById('decklist').value;
     const linhas = deckText.split('\n').filter(l => l.trim() !== "");
     
-    if (linhas.length === 0) { 
-        alert("O Doutor precisa de uma lista para trabalhar!"); 
-        return; 
-    }
+    if (linhas.length === 0) return alert("O Doutor precisa que você insira uma lista primeiro!");
 
     loading.classList.remove('hidden');
     resultados.classList.add('hidden');
@@ -85,15 +73,14 @@ async function analisarDeck() {
         curve: [0,0,0,0,0,0,0], 
         commander: "", colors: "", inventory: {},
         wincons_map: { COMBATE: [], DRENO: [], CONTROLE: [], COMBO: [] },
-        high_impact: [], all_card_names: [], combos_found: []
+        all_card_names: [], combos_found: [], high_impact: []
     };
 
-    // Coleta de Dados via Scryfall
-    for (let i = 0; i < linhas.length; i++) {
-        const nomeParaBusca = limparNome(linhas[i]);
+    for (let linha of linhas) {
+        const nomeParaBusca = limparNome(linha);
         if (!nomeParaBusca) continue;
         
-        document.getElementById('loading-text').innerText = `Analisando: ${nomeParaBusca}...`;
+        document.getElementById('loading-text').innerText = `Examinando: ${nomeParaBusca}...`;
 
         try {
             const res = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(nomeParaBusca)}`);
@@ -102,98 +89,159 @@ async function analisarDeck() {
             
             const oracle = (data.oracle_text || "").toLowerCase();
             const tLine = data.type_line.toLowerCase();
-            const name = data.name;
-            stats.all_card_names.push(name);
+            const cardName = data.name;
+            stats.all_card_names.push(cardName);
 
-            // Identificação de Comandante
+            // Identificação de Comandante e Identidade de Cores
             if (!stats.commander && tLine.includes("legendary") && !tLine.includes("land")) {
-                stats.commander = name;
+                stats.commander = cardName;
                 const cMap = {'W':'Branco','U':'Azul','B':'Preto','R':'Vermelho','G':'Verde'};
                 stats.colors = data.color_identity.map(c => cMap[c]).join(', ') || "Incolor";
             }
 
-            // Vetores de Vitória (Início do Mapeamento)
-            VETORES_GATILHOS.forEach(v => {
-                if (v.terms.some(t => oracle.includes(t))) {
-                    const isFinisher = oracle.includes("win the game") || oracle.includes("+x/+x") || oracle.includes("extra turn");
-                    stats.wincons_map[v.id].push({ name: name, role: isFinisher ? 'finisher' : 'enabler' });
-                }
-            });
-
-            // CMC e Inventário
+            // Curva de Mana e CMC
             if (!tLine.includes("land")) {
                 let v = data.cmc || 0;
                 stats.cmc += v; stats.count++;
                 stats.curve[Math.min(Math.floor(v), 6)]++;
             }
 
-            // Categorização Básica
+            // Categorização Heurística
             if (oracle.includes("add") || (oracle.includes("search") && oracle.includes("land"))) stats.ramp++;
             if (oracle.includes("draw")) stats.draw++;
             if (oracle.includes("destroy") || oracle.includes("exile")) stats.removal++;
+            if (data.cmc >= 6) stats.high_impact.push(cardName);
 
+            // Mapeamento de Vetores de Vitória
+            VETORES_GATILHOS.forEach(v => {
+                if (v.terms.some(t => oracle.includes(t))) {
+                    stats.wincons_map[v.id].push(cardName);
+                }
+            });
+
+            // Organização do Inventário
             let cat = tLine.includes("creature") ? "Criaturas" : 
                       tLine.includes("land") ? "Terrenos" : 
                       tLine.includes("artifact") ? "Artefatos" : 
                       tLine.includes("enchantment") ? "Encantamentos" : "Mágicas";
             
             if (!stats.inventory[cat]) stats.inventory[cat] = [];
-            stats.inventory[cat].push(name);
+            stats.inventory[cat].push(cardName);
 
-            await new Promise(r => setTimeout(r, 65));
+            // Delay para evitar Rate Limit da API
+            await new Promise(r => setTimeout(r, 60));
 
-        } catch (e) { console.error("Erro:", nomeParaBusca); }
+        } catch (e) { console.warn("Falha ao analisar:", nomeParaBusca); }
     }
-
+    
+    finalizarAnalise(stats);
+}
 /**
- * MAGIC DOCTOR v8.7 PLATINUM - PARTE 4
- * Lógica Final: Combos, Cores de Complexidade e Espaçamento
+ * MAGIC DOCTOR v8.8.1 PLATINUM
+ * BLOCO 2: PROCESSAMENTO DE ESTRATÉGIA, RISCO E POWER LEVEL
  */
 
-    // --- PROCESSAMENTO FINAL DE COMBOS ---
+function finalizarAnalise(stats) {
+    // 1. PROCESSAMENTO DE COMBOS
+    // Verifica se as cartas detectadas no deck batem com as duplas/trios do banco de dados
     COMBO_DATABASE.forEach(combo => {
-        const matches = combo.cards.filter(cardName => 
-            stats.all_card_names.some(detected => detected.includes(cardName))
+        const pecasEncontradas = combo.cards.filter(peca => 
+            stats.all_card_names.some(nomeDetectado => nomeDetectado.includes(peca))
         );
-        if (matches.length >= 2) {
-            stats.combos_found.push({ name: combo.name, pieces: matches.join(" + "), desc: combo.desc });
+        
+        // Se encontrar 2 ou mais peças, registra como um combo presente
+        if (pecasEncontradas.length >= 2) {
+            stats.combos_found.push({
+                name: combo.name,
+                pieces: pecasEncontradas.join(" + "),
+                desc: combo.desc
+            });
         }
     });
 
-    // --- DEFINIÇÃO DE ARQUÉTIPO E POWER LEVEL ---
-    let arquetipoFinal = "MIDRANGE";
-    if (stats.combos_found.length > 0) arquetipoFinal = "COMBO";
-    else if (stats.wincons_map.CONTROLE.length > 8) arquetipoFinal = "STAX";
-    else if (stats.inventory["Criaturas"]?.length > 30) arquetipoFinal = "STOMPY";
+    // 2. LÓGICA DE DEFINIÇÃO DE ARQUÉTIPO
+    let arquetipoFinal = "MIDRANGE"; // Padrão caso não se encaixe em outros
+    
+    if (stats.combos_found.length > 0) {
+        arquetipoFinal = "COMBO";
+    } else if (stats.wincons_map.CONTROLE.length > 7) {
+        arquetipoFinal = "STAX";
+    } else if (stats.inventory["Criaturas"] && stats.inventory["Criaturas"].length > 30) {
+        arquetipoFinal = "VOLTRON";
+    } else if (stats.inventory["Encantamentos"] && stats.inventory["Encantamentos"].length > 15) {
+        arquetipoFinal = "ARISTOCRATS"; // Simplificação para lógica de valor
+    }
 
-    const stratData = ARQUETIPOS[arquetipoFinal] || { desc: "Equilibrado.", risco: "Variável.", complexity: "Média" };
-    const finalPower = Math.min(3 + (stats.ramp*0.1) + (stats.draw*0.1) + (stats.combos_found.length*0.5), 10).toFixed(1);
+    const dadosEstrategia = ARQUETIPOS[arquetipoFinal] || ARQUETIPOS["MIDRANGE"];
 
-    renderizarPlatinumV88(stats, arquetipoFinal, stratData, finalPower);
-    loading.classList.add('hidden');
+    // 3. CÁLCULO DE POWER LEVEL (ESCALA DOUTOR 1-10)
+    // Base de cálculo matemática para evitar subjetividade
+    let powerBase = 3.0;
+    
+    // Bónus por Eficiência (Ramp e Draw)
+    powerBase += (stats.ramp * 0.12);
+    powerBase += (stats.draw * 0.12);
+    
+    // Bónus por Letalidade (Combos e Interação)
+    powerBase += (stats.combos_found.length * 0.75);
+    powerBase += (stats.removal * 0.05);
+
+    // Ajuste por Curva de Mana (CMC)
+    const avgCMC = stats.count > 0 ? (stats.cmc / stats.count) : 0;
+    if (avgCMC > 0) {
+        if (avgCMC < 2.8) powerBase += 0.6; // Deck muito rápido
+        else if (avgCMC > 4.0) powerBase -= 0.4; // Deck muito lento
+    }
+
+    // Teto Máximo e Mínimo
+    const powerFinal = Math.min(Math.max(powerBase, 1.0), 10.0).toFixed(1);
+
+    // 4. ENVIO PARA RENDERIZAÇÃO
+    // Passa os dados processados para a função que desenha na tela
+    renderizarInterfacePlatinum(stats, arquetipoFinal, dadosEstrategia, powerFinal, avgCMC);
 }
 
+// FUNÇÃO DE UTILITÁRIO: LIMPAR DIAGNÓSTICO
+function limparTudo() {
+    if (confirm("Deseja limpar todos os dados do diagnóstico atual?")) {
+        // Limpa o texto e recarrega a página para resetar os estados
+        document.getElementById('decklist').value = "";
+        location.reload();
+    }
+}
 /**
- * RENDERIZAÇÃO V8.8 - FOCO EM UI/UX
+ * MAGIC DOCTOR v8.8.1 PLATINUM
+ * BLOCO 3: RENDERIZAÇÃO DE UI, CORES DINÂMICAS E INVENTÁRIO
  */
-function renderizarPlatinumV88(stats, arquetipo, strat, power) {
-    document.getElementById('resultados').classList.remove('hidden');
-    
-    // 1. Identidade e Destaque de Complexidade (CORREÇÃO DE CORES)
+
+function renderizarInterfacePlatinum(stats, arquetipo, strat, power, avgCMC) {
+    const resArea = document.getElementById('resultados');
+    const loading = document.getElementById('loading');
+
+    // Exibe a área de resultados e esconde o loading
+    resArea.classList.remove('hidden');
+    loading.classList.add('hidden');
+
+    // 1. COLUNA 1: ARQUÉTIPO E COMPLEXIDADE (CORES DINÂMICAS)
     document.getElementById('res-arquetipo').innerText = arquetipo;
     document.getElementById('res-arquetipo-desc').innerText = strat.desc;
-    document.getElementById('res-risco').innerText = strat.risco;
     
     const compBadge = document.getElementById('res-complexity');
     compBadge.innerText = strat.complexity;
-    // Remove classes antigas e aplica a nova cor baseada no dicionário da Parte 1
-    compBadge.className = "complexity-badge " + (COMPLEXITY_STYLES[strat.complexity] || "");
+    
+    // Normaliza o texto para aplicar a classe de cor correta (ex: diff-baixa, diff-extrema)
+    const classeComplexidade = `diff-${strat.complexity.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`;
+    compBadge.className = `complexity-badge ${classeComplexidade}`;
 
+    // 2. COLUNA 2: MATRIZ DE RISCO
+    document.getElementById('res-risco').innerText = strat.risco;
+
+    // 3. COLUNA 3: IDENTIDADE E COMANDANTE
     document.getElementById('res-color-name').innerText = NOMES_CORES[stats.colors] || "Custom";
-    document.getElementById('res-color').innerText = stats.colors;
+    document.getElementById('res-color').innerText = stats.colors || "Sem Identidade";
     document.getElementById('res-commander').innerText = stats.commander || "Não Detectado";
 
-    // 2. Vetores de Vitória (CORREÇÃO DE ESPAÇAMENTO)
+    // 4. RELATÓRIO TÁTICO (VETORES DE VITÓRIA COM ESPAÇAMENTO)
     const vectorCont = document.getElementById('res-win-vectors');
     const listWin = document.getElementById('res-wincons-list');
     vectorCont.innerHTML = ""; 
@@ -202,30 +250,31 @@ function renderizarPlatinumV88(stats, arquetipo, strat, power) {
     Object.keys(stats.wincons_map).forEach(key => {
         const cards = stats.wincons_map[key];
         if (cards.length > 0) {
-            const label = VETORES_GATILHOS.find(g => g.id === key).label;
-            // Injeta o badge no container com gap
+            const label = VETORES_GATILHOS.find(v => v.id === key).label;
+            // Injeta o badge no container com gap (ajustado no CSS)
             vectorCont.innerHTML += `<span class="vector-badge">${label}</span>`;
             
-            cards.slice(0, 4).forEach(c => {
-                const icon = c.role === 'finisher' ? '⚔️' : '⚙️';
-                listWin.innerHTML += `<li><strong>${icon}</strong> ${c.name}</li>`;
+            // Lista os 4 principais cards do vetor
+            cards.slice(0, 4).forEach(cardName => {
+                listWin.innerHTML += `<li><strong>⚡</strong> ${cardName}</li>`;
             });
         }
     });
 
-    // 3. Velocidade e Combos
-    const avgCMC = stats.count > 0 ? (stats.cmc / stats.count) : 0;
+    // 5. VELOCIDADE E COMBOS
     const tempoTag = document.getElementById('res-tempo-tag');
-    if (avgCMC < 2.7) { tempoTag.innerText = "Early Game"; tempoTag.className = "tempo-tag tempo-early"; }
-    else if (avgCMC > 3.6) { tempoTag.innerText = "Late Game"; tempoTag.className = "tempo-tag tempo-late"; }
-    else { tempoTag.innerText = "Mid Game"; tempoTag.className = "tempo-tag tempo-mid"; }
+    if (avgCMC > 0) {
+        if (avgCMC < 2.8) { tempoTag.innerText = "Early Game"; tempoTag.className = "tempo-tag tempo-early"; }
+        else if (avgCMC > 3.7) { tempoTag.innerText = "Late Game"; tempoTag.className = "tempo-tag tempo-late"; }
+        else { tempoTag.innerText = "Mid Game"; tempoTag.className = "tempo-tag tempo-mid"; }
+    }
 
     const comboList = document.getElementById('res-combos-list');
     comboList.innerHTML = stats.combos_found.length > 0 
         ? stats.combos_found.map(c => `<li>🧩 <strong>${c.name}</strong><br><small>${c.desc}</small></li>`).join('')
-        : "<li>Nenhum combo detectado.</li>";
+        : "<li>Nenhum combo estrutural detectado.</li>";
 
-    // 4. Performance e Gráfico
+    // 6. PERFORMANCE E GRÁFICO DE MANA
     document.getElementById('res-cmc').innerText = avgCMC.toFixed(2);
     document.getElementById('stat-ramp').innerText = stats.ramp;
     document.getElementById('stat-draw').innerText = stats.draw;
@@ -233,28 +282,37 @@ function renderizarPlatinumV88(stats, arquetipo, strat, power) {
     document.getElementById('stat-power').innerText = power;
 
     const ctx = document.getElementById('manaChart').getContext('2d');
-    if (myChart) myChart.destroy();
+    if (myChart) myChart.destroy(); // Reseta o gráfico anterior
     myChart = new Chart(ctx, {
         type: 'bar',
         data: { 
             labels: ['0','1','2','3','4','5','6+'], 
-            datasets: [{ data: stats.curve, backgroundColor: '#c084fc', borderRadius: 5 }] 
+            datasets: [{ 
+                data: stats.curve, 
+                backgroundColor: '#c084fc', 
+                borderRadius: 5,
+                borderSkipped: false
+            }] 
         },
-        options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
+        options: { 
+            plugins: { legend: { display: false } }, 
+            responsive: true, 
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, display: false }, x: { grid: { display: false } } }
+        }
     });
 
-    // 5. Inventário com Hover
+    // 7. INVENTÁRIO POR TIPO (COLUNAS COM HOVER E SCROLLBAR)
     const invCont = document.getElementById('tipo-columns-container');
     invCont.innerHTML = "";
+    
+    // Ordena as categorias e renderiza as colunas
     Object.keys(stats.inventory).sort().forEach(cat => {
+        const listaCartas = stats.inventory[cat].sort().map(nome => `<li>${nome}</li>`).join('');
         invCont.innerHTML += `
             <div class="type-column">
                 <h3>${cat} (${stats.inventory[cat].length})</h3>
-                <ul>${stats.inventory[cat].sort().map(n => `<li>${n}</li>`).join('')}</ul>
+                <ul>${listaCartas}</ul>
             </div>`;
     });
-}
-
-function limparTudo() {
-    if(confirm("Deseja limpar o diagnóstico?")) location.reload();
 }
