@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor v8.7 - Platinum Tactical</title>
+    <title>Magic Doctor v8.8 - Platinum Tactical</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
@@ -13,14 +13,19 @@
         <header>
             <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
-            <p class="subtitle">Análise Tática e Heurística <span class="v-tag">v8.7 Platinum</span></p>
+            <p class="subtitle">Análise Tática e Heurística <span class="v-tag">v8.8 Platinum</span></p>
         </header>
 
-        <section class="deck-input-section">
-            <textarea id="decklist" placeholder="Cole sua lista aqui...&#10;Ex: 1 Heliod, Sun-Crowned&#10;1 Walking Ballista"></textarea>
+        <section class="deck-input-container">
+            <div class="textarea-wrapper">
+                <textarea id="decklist" placeholder="Cole sua lista aqui...&#10;Ex: 1 Heliod, Sun-Crowned&#10;1 Walking Ballista"></textarea>
+                <div class="modern-counter">
+                    <span class="counter-label">CARTAS</span>
+                    <span id="card-count">0</span>
+                </div>
+            </div>
             <div class="input-footer">
                 <span class="instruction">O Doutor identifica Vetores de Vitória, Combos e Peças de Alto Impacto.</span>
-                <div class="counter-badge">Cartas: <span id="card-count">0</span></div>
             </div>
         </section>
 
@@ -29,7 +34,6 @@
             <button class="btn-secondary" onclick="limparTudo()">Limpar Deck</button>
         </div>
 
-        <div id="status-area"></div>
         <div id="loading" class="hidden">
             <div class="spinner"></div>
             <p id="loading-text">O Doutor está processando sua estratégia...</p>
@@ -46,7 +50,7 @@
                         <p id="res-arquetipo-desc" class="arch-desc">Analise para identificar a base estratégica.</p>
                         <div class="complexity-box">
                             <small>Complexidade de Pilotagem</small>
-                            <div id="res-complexity" class="complexity-badge">-</div>
+                            <div id="res-complexity" class="complexity-badge">AGUARDANDO</div>
                         </div>
                     </div>
 
@@ -66,7 +70,6 @@
                     </div>
                 </div>
             </section>
-
             <section class="glass-card highlight">
                 <h2>🎯 Relatório Tático e Vetores de Vitória</h2>
                 <div class="tactical-grid-v2">
@@ -74,8 +77,8 @@
                     <div class="tactical-box">
                         <h3>Vetores de Vitória</h3>
                         <p class="box-subtitle">Caminhos para vencer.</p>
-                        <div id="res-win-vectors" class="vector-container"></div>
-                        <ul id="res-wincons-list" class="tactical-list"></ul>
+                        <div id="res-win-vectors" class="vector-container-spacer"></div>
+                        <ul id="res-wincons-list" class="tactical-list list-spacer"></ul>
                     </div>
 
                     <div class="tactical-box">
@@ -90,8 +93,8 @@
                             <small>Velocidade Estimada:</small>
                             <div id="res-tempo-tag" class="tempo-tag">-</div>
                         </div>
-                        <div class="combo-section" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
-                            <h4 style="font-size: 0.7rem; color: var(--accent); text-transform: uppercase; margin-bottom: 10px;">Combos Detectados:</h4>
+                        <div class="combo-section">
+                            <h4 class="combo-title">Combos Detectados:</h4>
                             <ul id="res-combos-list" class="tactical-list">
                                 </ul>
                         </div>
@@ -135,7 +138,7 @@
         </main>
 
         <footer>
-            <p class="disclaimer">Magic Doctor v8.7 Platinum | Algoritmo de Diagnóstico Tático</p>
+            <p class="disclaimer">Magic Doctor v8.8 Platinum | Sistema de Diagnóstico Heurístico</p>
         </footer>
     </div>
 
