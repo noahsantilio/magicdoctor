@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor v3.0 - Commander Analytics</title>
+    <title>Magic Doctor v4.0 - Deck Archetype Specialist</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,7 +13,7 @@
         <header>
             <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
-            <p class="subtitle">Análise Profissional de Commander <span class="v-tag">v3.0</span></p>
+            <p class="subtitle">Análise de Arquétipo e Performance <span class="v-tag">v4.0</span></p>
         </header>
 
         <section class="deck-input-section">
@@ -21,7 +21,7 @@
                 placeholder="Cole sua lista aqui...&#10;Exemplo: 1 Toph, Earthbending Master (TLE) 145"></textarea>
             
             <div class="input-footer">
-                <span class="instruction">Busca inteligente ativada (Fuzzy Search).</span>
+                <span class="instruction">Análise heurística de estratégia ativada.</span>
                 <div class="counter-badge">
                     Cartas: <span id="card-count">0</span>
                 </div>
@@ -37,43 +37,56 @@
         
         <div id="loading" class="hidden">
             <div class="spinner"></div>
-            <p id="loading-text">O Doutor está examinando as cartas...</p>
+            <p id="loading-text">O Doutor está identificando a estratégia...</p>
         </div>
 
         <div id="resultados" class="hidden">
-            <div class="glass-card">
-                <h2>📊 Informações Gerais</h2>
-                <div class="stats-grid">
-                    <div class="stat-item"><strong>Comandante</strong><br><span id="res-commander">-</span></div>
-                    <div class="stat-item"><strong>Identidade</strong><br><span id="res-color">-</span></div>
-                    <div class="stat-item"><strong>Arquétipo</strong><br><span id="res-arquetipo">-</span></div>
+            <div class="glass-card highlight">
+                <h2>🧬 Identidade do Deck</h2>
+                <div class="archetype-container">
+                    <div class="arch-box">
+                        <small>Arquétipo Principal</small>
+                        <div id="res-arquetipo" class="arch-value">Analisando...</div>
+                    </div>
+                    <div class="arch-box">
+                        <small>Cores do Comandante</small>
+                        <div id="res-color" class="color-symbols">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-layout">
+                <div class="glass-card">
+                    <h2>📊 Curva de Mana</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="manaChart"></canvas>
+                    </div>
+                    <p class="cmc-label">CMC Médio: <span id="res-cmc">-</span></p>
+                </div>
+
+                <div class="glass-card">
+                    <h2>⚡ Estatísticas</h2>
+                    <div class="perf-list">
+                        <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
+                        <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
+                        <div class="perf-item"><span>⚔️ Interação:</span> <span id="stat-remocao">-</span></div>
+                        <div class="perf-item"><span>🛡️ Proteção:</span> <span id="stat-protecao">-</span></div>
+                    </div>
+                    <div class="power-level-box">
+                        <span>Power Level Estimado</span>
+                        <div id="stat-power" class="power-value">-</div>
+                    </div>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h2>📈 Curva de Mana</h2>
-                <div class="chart-wrapper">
-                    <canvas id="manaChart"></canvas>
-                </div>
-                <p class="cmc-label">CMC Médio: <span id="res-cmc">-</span></p>
-            </div>
-
-            <div class="glass-card">
-                <h2>⚡ Performance e Poder</h2>
-                <div class="perf-list">
-                    <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
-                    <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
-                    <div class="perf-item"><span>⚔️ Interação:</span> <span id="stat-remocao">-</span></div>
-                </div>
-                <div class="power-level-box">
-                    <span>Power Level Estimado</span>
-                    <div id="stat-power" class="power-value">-</div>
-                </div>
+                <h2>👨‍✈️ Comandante</h2>
+                <p id="res-commander" style="font-size: 1.2rem; font-weight: bold; color: #818cf8;">-</p>
             </div>
         </div>
 
         <footer>
-            <p class="disclaimer">Magic Doctor v3.0 | Algoritmo de Limpeza de Strings V3 | Scryfall API</p>
+            <p class="disclaimer">Magic Doctor v4.0 | Archetype Detection System | Scryfall API</p>
         </footer>
     </div>
 
