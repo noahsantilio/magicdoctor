@@ -1,5 +1,5 @@
 /* ============================================================
-   MAGIC DOCTOR v6.0 - ESTILOS COMPLETOS
+   MAGIC DOCTOR v6.1 - CORREÇÃO DE RENDERIZAÇÃO
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -17,25 +17,25 @@
     --accent: #c084fc;
 }
 
-/* Base e Scrollbar */
+/* Reset e Estrutura */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     background-color: var(--bg);
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.15) 0%, transparent 30%),
-        radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.1) 0%, transparent 30%);
+        radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.15) 0%, transparent 35%),
+        radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.1) 0%, transparent 35%);
     color: var(--text);
     font-family: 'Plus Jakarta Sans', sans-serif;
-    margin: 0;
     padding: 20px;
     display: flex;
     justify-content: center;
     min-height: 100vh;
 }
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
 .main-container {
     width: 100%;
@@ -55,6 +55,7 @@ h1 {
     font-size: 3rem;
     margin: 0;
     background: linear-gradient(to right, #818cf8, #c084fc);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 800;
@@ -64,18 +65,18 @@ h1 {
 .v-tag {
     font-size: 0.8rem;
     background: var(--primary);
-    color: white !important;
-    -webkit-text-fill-color: white !important;
+    color: #ffffff;
     padding: 4px 12px;
     border-radius: 20px;
     vertical-align: middle;
     font-weight: 600;
+    display: inline-block;
 }
 
 .subtitle { color: var(--text-dim); margin-top: 10px; font-size: 1.1rem; }
 
 /* Entrada de Dados */
-.deck-input-section { position: relative; margin-bottom: 20px; }
+.deck-input-section { margin-bottom: 20px; }
 
 textarea {
     width: 100%;
@@ -83,14 +84,15 @@ textarea {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 24px;
-    color: white;
+    color: #ffffff;
     padding: 25px;
-    font-family: 'Consolas', monospace;
+    font-family: 'Consolas', 'Monaco', monospace;
     font-size: 14px;
     resize: none;
     backdrop-filter: blur(12px);
-    box-sizing: border-box;
+    -webkit-backdrop-filter: blur(12px);
     transition: all 0.3s ease;
+    display: block;
 }
 
 textarea:focus {
@@ -113,6 +115,7 @@ textarea:focus {
     border-radius: 50px;
     font-weight: 700;
     font-size: 0.9rem;
+    color: white;
 }
 
 /* Botões */
@@ -127,10 +130,11 @@ button {
     font-weight: 700;
     font-size: 1rem;
     transition: 0.3s;
+    color: white;
 }
 
-.btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.4); }
-.btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--border); }
+.btn-primary { background: var(--primary); box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.4); }
+.btn-secondary { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); }
 
 button:hover { transform: translateY(-3px); filter: brightness(1.2); }
 
@@ -141,58 +145,52 @@ button:hover { transform: translateY(-3px); filter: brightness(1.2); }
     padding: 30px;
     border-radius: 28px;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     margin-bottom: 25px;
 }
 
 .highlight { border: 1px solid rgba(129, 140, 248, 0.3); }
 
 h2 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     margin: 0 0 20px 0;
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }
 
-/* Arquétipo e Cores */
+/* Identidade */
 .archetype-container {
     display: grid;
     grid-template-columns: 1.4fr 1fr;
     gap: 30px;
 }
 
-.arch-box small { display: block; color: var(--text-dim); margin-bottom: 10px; }
-
-.arch-value { font-size: 2.2rem; font-weight: 800; color: var(--accent); line-height: 1; }
-
-.arch-desc {
-    font-size: 0.95rem;
-    color: var(--text-dim);
-    margin-top: 12px;
-    line-height: 1.6;
-}
-
+.arch-box small { display: block; color: var(--text-dim); margin-bottom: 10px; font-weight: 600; }
+.arch-value { font-size: 2.2rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
+.arch-desc { font-size: 0.95rem; color: var(--text-dim); margin-top: 12px; line-height: 1.6; }
 .color-text { font-size: 1.3rem; font-weight: 700; color: #818cf8; margin-top: 10px; }
 
-/* Grid e Performance */
+/* Grid Performance */
 .grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
 
-.chart-wrapper { height: 220px; }
-.cmc-label { text-align: center; font-weight: 800; font-size: 1.2rem; color: #818cf8; }
+.chart-wrapper { height: 220px; position: relative; }
+.cmc-label { text-align: center; font-weight: 800; font-size: 1.2rem; color: #818cf8; margin-top: 10px; }
 
 .perf-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
 
 .power-level-box {
     text-align: center;
-    background: rgba(79, 70, 229, 0.1);
-    padding: 20px;
-    border-radius: 20px;
-    margin-top: 20px;
+    background: rgba(79, 70, 229, 0.15);
+    padding: 25px;
+    border-radius: 24px;
+    margin-top: 15px;
+    border: 1px solid rgba(79, 70, 229, 0.2);
 }
 
-.power-value { font-size: 4rem; font-weight: 800; color: #818cf8; line-height: 1; }
+.power-value { font-size: 4rem; font-weight: 800; color: #818cf8; line-height: 1; margin-top: 10px; }
 
-/* Nova Seção: Colunas de Tipos */
+/* Distribuição de Tipos */
 .type-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -200,35 +198,34 @@ h2 {
 }
 
 .type-column {
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(15, 23, 42, 0.6);
     padding: 20px;
     border-radius: 20px;
     border: 1px solid var(--border);
-    max-height: 300px;
+    max-height: 350px;
     overflow-y: auto;
 }
 
 .type-column h3 {
-    font-size: 0.85rem;
-    margin-top: 0;
+    font-size: 0.8rem;
     color: var(--accent);
     border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
-    margin-bottom: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
 }
 
-.type-column ul { list-style: none; padding: 0; margin: 0; }
-
+.type-column ul { list-style: none; }
 .type-column li {
     font-size: 0.85rem;
-    padding: 5px 0;
+    padding: 6px 0;
     color: var(--text-dim);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-/* Status e Erros */
+/* Status e Animações */
 .error-msg {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.15);
     border: 1px solid var(--error);
     color: #fca5a5;
     padding: 15px;
@@ -237,11 +234,9 @@ h2 {
     text-align: center;
 }
 
-#loading { text-align: center; padding: 40px; }
-
 .spinner {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border: 4px solid rgba(255, 255, 255, 0.1);
     border-top-color: var(--primary);
     border-radius: 50%;
@@ -249,15 +244,19 @@ h2 {
     margin: 0 auto 20px;
 }
 
-.hidden { display: none; }
-
-/* Animações e Mobile */
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+.hidden { display: none; }
+
+/* Responsividade Corrigida */
 @media (max-width: 850px) {
     .grid-layout, .archetype-container { grid-template-columns: 1fr; }
     h1 { font-size: 2.2rem; }
     .button-group { flex-direction: column; }
     .type-grid { grid-template-columns: 1fr; }
+    .power-value { font-size: 3rem; }
 }
+
+footer { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid var(--border); }
+.disclaimer { font-size: 0.8rem; color: var(--text-dim); }
