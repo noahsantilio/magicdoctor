@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Doctor - Commander Analytics</title>
+    <title>Magic Doctor v3.0 - Commander Analytics</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,17 +13,17 @@
         <header>
             <div class="logo-area">⚕️</div>
             <h1>Magic Doctor</h1>
-            <p class="subtitle">Análise Profissional de Commander... ou nem tanta</p>
+            <p class="subtitle">Análise Profissional de Commander <span class="v-tag">v3.0</span></p>
         </header>
 
         <section class="deck-input-section">
             <textarea id="decklist" 
-                placeholder="Cole sua lista aqui...&#10;&#10;Exemplo:&#10;1 Sol Ring&#10;1 Command Tower&#10;1 Toph, Earthbending Master (TLE) 145"></textarea>
+                placeholder="Cole sua lista aqui...&#10;Exemplo: 1 Toph, Earthbending Master (TLE) 145"></textarea>
             
             <div class="input-footer">
-                <span class="instruction">Aceita formatos do Moxfield, Archidekt e Arena.</span>
+                <span class="instruction">Busca inteligente ativada (Fuzzy Search).</span>
                 <div class="counter-badge">
-                    Cartas detectadas: <span id="card-count">0</span>
+                    Cartas: <span id="card-count">0</span>
                 </div>
             </div>
         </section>
@@ -37,7 +37,7 @@
         
         <div id="loading" class="hidden">
             <div class="spinner"></div>
-            <p>O Doutor está examinando seu deck no Scryfall...</p>
+            <p id="loading-text">O Doutor está examinando as cartas...</p>
         </div>
 
         <div id="resultados" class="hidden">
@@ -51,7 +51,7 @@
             </div>
 
             <div class="glass-card">
-                <h2>📈 Curva de Mana (Não-Terrenos)</h2>
+                <h2>📈 Curva de Mana</h2>
                 <div class="chart-wrapper">
                     <canvas id="manaChart"></canvas>
                 </div>
@@ -61,9 +61,9 @@
             <div class="glass-card">
                 <h2>⚡ Performance e Poder</h2>
                 <div class="perf-list">
-                    <div class="perf-item"><span>🚀 Ramp (Aceleração):</span> <span id="stat-ramp">-</span></div>
-                    <div class="perf-item"><span>🃏 Draw (Compra):</span> <span id="stat-draw">-</span></div>
-                    <div class="perf-item"><span>⚔️ Interação (Respostas):</span> <span id="stat-remocao">-</span></div>
+                    <div class="perf-item"><span>🚀 Ramp:</span> <span id="stat-ramp">-</span></div>
+                    <div class="perf-item"><span>🃏 Draw:</span> <span id="stat-draw">-</span></div>
+                    <div class="perf-item"><span>⚔️ Interação:</span> <span id="stat-remocao">-</span></div>
                 </div>
                 <div class="power-level-box">
                     <span>Power Level Estimado</span>
@@ -73,13 +73,7 @@
         </div>
 
         <footer>
-            <h3>Critérios de Avaliação</h3>
-            <div class="footer-grid">
-                <div class="f-item"><strong>Aceleração:</strong> Analisamos fontes de mana extra e pedras de mana.</div>
-                <div class="f-item"><strong>Consistência:</strong> Medimos motores de compra e fluidez da curva.</div>
-                <div class="f-item"><strong>Interação:</strong> Contabilizamos remoções, anulações e proteções.</div>
-            </div>
-            <p class="disclaimer">Magic Doctor v2.5 - Integrado via Scryfall API. Desenvolvido para Commander (EDH).</p>
+            <p class="disclaimer">Magic Doctor v3.0 | Algoritmo de Limpeza de Strings V3 | Scryfall API</p>
         </footer>
     </div>
 
